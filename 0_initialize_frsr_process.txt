@@ -1,0 +1,215 @@
+V3 processing--
+* 0_setup_isar_proc.txt -- edit for processing
+* 1_make_isar_raw_flat.pl -- makes timeseries/isar_raw_flat.txt	
+
+========= General testing =======================================
+LASTEDIT: 20170702T043928Z
+SERIES NAME: raw
+
+# paths starting from $HOME
+DATAPATH: Dropbox/data/frsr/20170627_frsr
+ARCHIVE: archive
+TIMESERIESPATH: Dropbox/data/frsr/20170627_frsr_lanl/timeseries
+IMAGEPATH: Dropbox/data/frsr/20170627_frsr_lanl/images
+RAW FILE: archive
+DataFileKey: capture
+MFRSN: 374
+
+comment:
+ 170627--scp captured file 
+ Several days here.
+end
+   avoid leading zeros
+STARTTIME: 2017,6,22,21,7,0
+ENDTIME: 2018,5,30,15,8,0
+TIMECORRECTSECS: 0
+
+	# Restrict sweep processing
+THEADMIN: 10
+THEADMAX: 60
+
+	# Compute model clear sky curve
+	# 
+SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+STATION PRESSURE: 1013
+
+	# GPS fixed information
+GPS FIXED FLAG: 0
+	# LANL beta test site from onboard gps.
+GPS FIXED LATITUDE: 35.850255
+GPS FIXED LONGITUDE: -106.2727
+
+	# TILT fixed information
+TILT FIXED FLAG: 0
+TILT FIXED PITCH: 0
+TILT FIXED ROLL: 0
+EDGE INDEX OFFSET: 4
+	========= General testing =======================================
+	LASTEDIT: 20170622T235929Z
+	SERIES NAME: raw
+	DATAPATH: /Users/rmr/Dropbox/swmain/apps/FRSR/data170622/archive
+	TIMESERIESPATH: /Users/rmr/Dropbox/swmain/apps/FRSR/data170622/timeseries
+	IMAGEPATH: /Users/rmr/Dropbox/swmain/apps/FRSR/data170622/images
+	RAW FILE: capturefrsr.txt
+	DataFileKey: capture
+	MFRSN: 374
+
+	comment:
+	 170622--online capture
+	end
+	   avoid leading zeros
+	STARTTIME: 2017,5,28,18,24,0
+	ENDTIME: 2018,5,30,15,8,0
+	TIMECORRECTSECS: 0
+
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+
+		# Compute model clear sky curve
+		# 
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 1013
+
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	========= LANL beta03=======================================
+	LASTEDIT: 170531
+	SERIES NAME: beta03
+	DATAPATH: /Users/rmr/Dropbox/data/frsr/20170530_frsr_lanl
+	TIMESERIESPATH: /Users/rmr/Dropbox/data/frsr/20170530_frsr_lanl/timeseries
+	IMAGEPATH: /Users/rmr/Dropbox/data/frsr/20170530_frsr_lanl/images
+	RAW FILE: frsr170530.txt
+	DataFileKey: capture
+	MFRSN: 374
+
+	comment:
+	 170416-repaired sn374 T1.
+	 Note: T1 & T2 are cross wired. Are all the MFR thermistors cross wired too.
+	 Sent MFR370 back to SGP.
+	 170508--preamp#2 complete. System is operating in the yard. Nice. 
+	 170523--lanl drive
+	 170527--set equipment on site.
+	 170528--clear night and very clear morning
+	 170530--daq for 2 days over memorial day
+	end
+	   avoid leading zeros
+	STARTTIME: 2017,5,28,18,24,0
+	ENDTIME: 2017,5,30,15,8,0
+	TIMECORRECTSECS: 0
+
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+
+		# Compute model clear sky curve
+		# 
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 1013
+
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+
+	EDGE INDEX OFFSET: 4
+	========= LANL beta02=======================================
+	LASTEDIT: 170528
+	SERIES NAME: beta02
+	DATAPATH: /Users/rmr/data/frsr/20170528_frsr_lanl
+	RAW FILE: frsr170528.txt
+	TIMESERIESPATH: /Users/rmr/data/frsr/20170528_frsr_lanl/timeseries
+	IMAGEPATH: /Users/rmr/data/frsr/20170528_frsr_lanl/images
+	DataFileKey: capture
+	MFRSN: 374
+
+	comment:
+	 170416-repaired sn374 T1.
+	 Note: T1 & T2 are cross wired. Are all the MFR thermistors cross wired too.
+	 Sent MFR370 back to SGP.
+	 170508--preamp#2 complete. System is operating in the yard. Nice. 
+	 170523--lanl drive
+	 170527--set equipment on site.
+	 170528--clear night and very clear morning
+	end
+	   avoid leading zeros
+	STARTTIME: 2017,5,27,20,27,0
+	ENDTIME: 2017,5,28,18,20,0
+	TIMECORRECTSECS: 0
+
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+
+		# Compute model clear sky curve
+		# 
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 1013
+
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+
+	EDGE INDEX OFFSET: 4
+	========= LANL Beta =======================================
+	LASTEDIT: 170526
+	SERIES NAME: beta01
+	DATAPATH: /Users/rmr/data/20170527_frsr_lanl/archive/data
+	RAW FILE: capture170526.txt
+	TIMESERIESPATH: /Users/rmr/data/20170527_frsr_lanl/timeseries
+	IMAGEPATH: /Users/rmr/data/20170527_frsr_lanl/images
+	DataFileKey: capture
+	MFRSN: 374
+
+	comment:
+	 170416-repaired sn374 T1.
+	 Note: T1 & T2 are cross wired. Are all the MFR thermistors cross wired too.
+	 Sent MFR370 back to SGP.
+	 170508--preamp#2 complete. System is operating in the yard. Nice. 
+	 170523--lanl drive
+	 170527--set equipment on site.
+	end
+
+	   avoid leading zeros
+	STARTTIME: 2017 5 26 22 56 40
+	ENDTIME: 2017 5 27 18 25 0
+	TIMECORRECTSECS: 0
+	========= TESTING =======================================
+	LASTEDIT: 170508
+	SERIES: tst1
+	DATAPATH: /Users/rmr/Dropbox/swmain/apps/frsrprocess
+	MFRSN: 374
+
+	comment:
+	 170416-repaired sn374 T1.
+	 Note: T1 & T2 are cross wired. Are all the MFR thermistors cross wired too.
+	 Sent MFR370 back to SGP.
+	 170508--preamp#2 complete. System is operating in the yard. Nice. 
+	end
+
+	   avoid leading zeros
+	STARTTIME: 2017/5/9 17 0 0
+	ENDTIME: 2017 5 9 23 0 0
+	TIMECORRECTSECS: 0
