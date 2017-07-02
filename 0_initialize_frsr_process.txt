@@ -4,15 +4,15 @@ V3 processing--
 
 ========= General testing =======================================
 LASTEDIT: 20170702T043928Z
-SERIES NAME: raw
+SERIES NAME: lanl
 
-# paths starting from $HOME
-DATAPATH: Dropbox/data/frsr/20170627_frsr
-ARCHIVE: archive
-TIMESERIESPATH: Dropbox/data/frsr/20170627_frsr_lanl/timeseries
-IMAGEPATH: Dropbox/data/frsr/20170627_frsr_lanl/images
-RAW FILE: archive
+# paths appended to $HOME
+DATAPATH: Dropbox/data/frsr
+RAWPATH: Dropbox/data/frsr/raw
+TIMESERIESPATH: Dropbox/data/frsr/timeseries
+IMAGEPATH: Dropbox/data/frsr/images
 DataFileKey: capture
+
 MFRSN: 374
 
 comment:
@@ -20,8 +20,8 @@ comment:
  Several days here.
 end
    avoid leading zeros
-STARTTIME: 2017,6,22,21,7,0
-ENDTIME: 2018,5,30,15,8,0
+STARTTIME: 2017,6,30,20,0,0
+ENDTIME: 2017,7,1,0,0,0
 TIMECORRECTSECS: 0
 
 	# Restrict sweep processing

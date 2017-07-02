@@ -1,34 +1,42 @@
 #!/usr/bin/perl -X
 
-
-
 #call: ./1_frsr_raw2flat.pl rawfilename
 # e.g. ./1_frsr_raw2flat.pl Icapture.txt
 
 		# LIBRARIES
-print"PERL LIBRARY : $ENV{MYLIB}\n";
 use lib $ENV{MYLIB};
 use perltools::MRtime;
 use perltools::MRutilities;
 use perltools::MRradiation;
 use perltools::MRstatistics;
 use perltools::Prp;
-use File::stat
+use File::stat;
+#use Time::localtime;
 #use POSIX;
 #use File::Basename;
 
-printf"Program $0\n";
-die;
 
 # my $epoch_timestamp = (stat($fh))[9];
 # my $timestamp       = localtime($epoch_timestamp);
 
+my ($sb, $hdr0);
 my ($setupfile,$datapath,$timeseriespath,$imagepath,$home);
 my ($str,$str1,$cmd,$dtstart,$dtend,$seccorrect,$fout,$rawfile,$nrec,$nread,$dt);
 my ($i, $ic, $cmd, $strout, $nbadcheck);
 my ($mode,$imin);
 my ($strout1,$strout2,$strout3,$strout4,$strout5,$strout6,$strout7);
 my (@w,@sw);
+my $nbadcheck=0;
+$nread=0; # total number of $FSR03 records
+$nrec=0; # record written to the output, da0, file. 
+$nhigh=0;  #packets in high/transition mode
+
+$sb = stat($0);
+# printf "mtime %s\n",scalar localtime $sb->mtime;
+# printf "mtime %s\n",dtstr($sb->mtime,'short');
+$hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
+print "$hdr0\n";
+
 $home = $ENV{HOME};
 		# SETUPFILE
 $setupfile='0_initialize_frsr_process.txt';
@@ -44,18 +52,15 @@ $datapath = $ENV{HOME}.'/'.FindInfo($setupfile,'DATAPATH',':');
 print "DATAPATH = $datapath   ";
 if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
-	# RAW FILE, COMMAND LINE
-$rawfile=FindInfo($setupfile,'RAW FILE',':');
-$rawfile="$datapath/$rawfile";
-print "raw file = $rawfile\n";
-if (! -f $rawfile) {
-	print"DOES NOT EXIST - stop.\n";
-	exit 1;
-}
+		# RAWPATH 
+$rawpath = $ENV{HOME}.'/'.FindInfo($setupfile,'RAWPATH',':');
+print "RAWPATH = $rawpath   ";
+if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
+else {print "EXISTS.\n"}
 		# TIMESERIESPATH
 $timeseriespath=$ENV{HOME}.'/'.FindInfo($setupfile,"TIMESERIESPATH",":");
 if ( ! -d $timeseriespath ) { 
-	system "mkdir $timeseriespath";
+	system "mkdir $timeseriespath  EXISTS";
 }
 print"timeseriespath = $timeseriespath\n";
 		# IMAGEPATH
@@ -63,7 +68,7 @@ $imagepath=$ENV{HOME}.'/'.FindInfo($setupfile,"IMAGEPATH",":");
 if ( ! -d $imagepath ) { 
 	system "mkdir $imagepath";
 }
-print"imagepath = $imagepath\n";
+print"imagepath = $imagepath EXISTS\n";
 
 		# START AND END TIMES
 $str = FindInfo($setupfile,'STARTTIME');
@@ -80,6 +85,7 @@ printf"endtime = %s\n", dtstr($dtend);
 		# TIME CORRECTION
 $seccorrect=FindInfo($setupfile,'TIMECORRECTSECS');
 print"seccorrect=$seccorrect\n";
+
 	# SERIES NAME
 $seriesname = FindInfo($setupfile,'SERIES NAME',':');
 print"seriesname=$seriesname\n";
@@ -87,15 +93,9 @@ print"seriesname=$seriesname\n";
 $edgeoffset = FindInfo($setupfile,"EDGE INDEX OFFSET",':');
 print"EDGE INDEX OFFSET = $edgeoffset\n";
 
-
-# @f=`ls -1d $datapath/$series/$series*myData*.dat`;
-# $i=0; foreach(@f){chomp($str=$_); print"$i   $str\n"; $i++}
-
-# OPEN INPUT FILE
-print"INPUT: $rawfile\n";
-open(FIN,$rawfile) or die;
-
-		# OUT FLAT FILE
+#=====================
+# OUT FLAT FILE
+#=====================
 $fout = $timeseriespath."/da0raw.txt";
 print"OUTPUT: $fout\n";
 open Fout,">$fout" or die;
@@ -123,42 +123,79 @@ for($ic=1; $ic<=7; $ic++){
 	eval $str;
 }
 
-$nrec=0;
-$nread=0;
+#=============================
+#  LIST ALL RAW FILES
+#=============================
+@f = `find $rawpath -iname capture* -print`;
+#printf"No. raw files = %d\n",$#f;
 
-# FIND THE FIRST LINE WITH START TIME
-while(<FIN>){
-	chomp($str=$_);
-	$nread++;
-	if( $str=~/\$FSR03/ ){
-		$dt=FrsrParse_dt($str);
-		if($dt>=$dtstart){last}
-	}
-}
-FrsrParse($str);
-print Fout "$nrec $strout\n";
-
-# READ ALL LINES TO DTEND
-while(<FIN>) {
-	chomp($str=$_);
-	$nread++;
-	if( $str =~ /\$FSR03/ ){
-		$dt=FrsrParse($str);
-		if($dt > $dtend){last}
-		$nrec++;
-		if($dt>$dtstart && $dt <= $dtend){
-			print Fout "$nrec $strout\n";
-			if($mode==2){
-				for($ic=1;$ic<=7;$ic++){
-					$str=sprintf"printf R%d \"\$nrec  \$strout%d\\n\";",$ic,$ic;
-					#print"$str\n";
-					eval $str;
+foreach $f (@f) {
+	chomp $f;
+	$sb=stat($f);
+	printf"%s, mtime %s\n",$f, dtstr($sb->mtime,'short');
+	#  	FOLDER DATE
+	# /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
+	if ( $f =~ /20......T......Z/ ){  # pull folder time
+		$ix=index($f,"201");
+		$fdt=dtstr2dt(substr($f,$ix,16));
+		# printf"index = $ix, %s, %s\n", substr($f,$ix,16), dtstr($fdt);
+		if($dtstart > $fdt) {
+			#print"Skip $f\n";
+		}else{
+			#	OPEN AND SCAN THE FILE
+			print "OPEN: $f\n";
+			open FIN, $f or die;
+			# FIND THE FIRST LINE WITH START TIME
+			while(<FIN>){
+				chomp($str=$_);
+				$nread++;
+				if( $str=~/\$FSR03/ ){
+					$dt=FrsrParse_dt($str);  # if chksum then pull gps time; fail=0
+					if($dt>=$dtstart){last}
 				}
-			}	
+			}
+			# READ ALL LINES TO dtend
+			while(<FIN>) {
+				chomp($str=$_);
+				if( $str =~ /\$FSR03/ ){
+					$dt=FrsrParse($str);
+					if($dt > $dtend){last}
+					# IS RECORD INSIDE TIME WINDOW
+					if($dt>$dtstart && $dt <= $dtend){
+						$nrec++;
+						print Fout "$nrec $strout\n";
+						if($mode==2){
+							for($ic=1;$ic<=7;$ic++){
+								$str=sprintf"printf R%d \"\$nrec  \$strout%d\\n\";",$ic,$ic;
+								#print"$str\n";
+								eval $str;
+							}
+						}	
+					}
+				}
+			}
 		}
 	}
 }
-print"bad checksums=$nbadcheck, good records: $nrec\n";
+print"nread=$nread,  bad checksums=$nbadcheck,   good records: $nrec,    high mode: $nhigh\n";
+
+
+	# OUT SWEEP CHANNELS
+for($ic=1; $ic<=7; $ic++){
+	$fout = $timeseriespath."/da".$ic."raw.txt";
+	print"R$ic, $fout\n";
+	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
+	#print"$str\n";
+	eval $str;
+	$str=sprintf"printf R%d \"Program \$0,  Chan %d,    Run time:%s\\n\";",$ic,$ic,dtstr(now(),'short');
+	#print"$str\n";
+	eval $str;
+	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
+	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
+		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 ed1 ed2 edge shadow\\n\";",$ic;
+	#print"$str\n";
+	eval $str;
+}
 exit 0;
 
 
@@ -351,6 +388,7 @@ sub FrsrParse {
 		# HIGH MODE
 		if($pktlen>300){
 			$mode=2;
+			$nhigh++;
 			# FILL THE SW ARRAY
 			$ix=$ichar; # first character
 			for($ia=0; $ia<7; $ia++){

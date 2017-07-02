@@ -4,65 +4,65 @@
 # solflux parameters
 #($In,$Id) = solflux($ze, .05, 1013, .2, .2, .001);
 
+		# LIBRARIES
 use lib $ENV{MYLIB};
 use perltools::MRtime;
 use perltools::MRutilities;
 use perltools::MRradiation;
 use perltools::MRstatistics;
-use perltools::prp;
-use POSIX;
-use Getopt::Long;
-use File::Basename;
+use perltools::Prp;
+use File::stat;
 
 my ($setupfile,$theadmin,$stationpressure,@solfluxparams,$FixedLocation,$FixedTilt);
 my ($missing,$outfile,$series,$pitch,$roll,$saz,$ze,$ze0,$In,$Id);
 
-		# SETUP FILE
-$setupfile = '0_initialize_frsr_process.txt';
-if (! -f $setupfile){
-	print"SETUP FILE $setupfile DOES NOT EXIST. STOP\n"; 
-	exit 1;
-}
+$sb = stat($0);
+# printf "mtime %s\n",scalar localtime $sb->mtime;
+# printf "mtime %s\n",dtstr($sb->mtime,'short');
+$hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
+print "$hdr0\n";
 
-		# DATAPATH FROM COMMAND LINE -- path to top level
-my $datapath = FindInfo($setupfile,"DATAPATH",":");
-if ( ! -d $datapath ) {
-	print "DATAPATH = $datapath DOES NOT EXIST\n"; 
-	exit 1;
+$home = $ENV{HOME};
+		# SETUPFILE
+$setupfile='0_initialize_frsr_process.txt';
+chomp($setupfile);
+print"SETUP FILE = $setupfile   ";
+if(-f $setupfile){
+	print"EXISTS.\n";
+} else {
+	print"DOES NOT EXIST. STOP.\n";
 }
-
-		# TIMESERIES FOLDER
-my $timeseriespath = FindInfo($setupfile,"TIMESERIESPATH",":");
+		# DATAPATH 
+$datapath = $ENV{HOME}.'/'.FindInfo($setupfile,'DATAPATH',':');
+print "DATAPATH = $datapath   ";
+if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
+else {print "EXISTS.\n"}
+		# RAWPATH 
+$rawpath = $ENV{HOME}.'/'.FindInfo($setupfile,'RAWPATH',':');
+print "RAWPATH = $rawpath   ";
+if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
+else {print "EXISTS.\n"}
+		# TIMESERIESPATH
+$timeseriespath=$ENV{HOME}.'/'.FindInfo($setupfile,"TIMESERIESPATH",":");
 if ( ! -d $timeseriespath ) { 
-	print "TIMESERIES PATH = $timeseriespath DOES NOT EXIST. STOP.\n"; 
-	exit 1; 
+	system "mkdir $timeseriespath  EXISTS";
 }
-	# SERIES NAME
-$series=FindInfo($setupfile,"SERIES NAME",':');
+print"timeseriespath = $timeseriespath\n";
+		# IMAGEPATH
+$imagepath=$ENV{HOME}.'/'.FindInfo($setupfile,"IMAGEPATH",":");
+if ( ! -d $imagepath ) { 
+	system "mkdir $imagepath";
+}
+print"imagepath = $imagepath EXISTS\n";
 
-
-		# START TIME
-$str=FindInfo($setupfile,"STARTTIME",':');
-@d=split(/[ ,-]+/,$str);
-$dtstart=datesec($d[0],$d[1],$d[2],$d[3],$d[4],$d[5]);
-printf"START TIME = %s\n", dtstr($dtstart);
-
-		# END TIME
-$str=FindInfo($setupfile,"ENDTIME",':');
-@d=split(/[ ,-]+/,$str);
-$dtend=datesec($d[0],$d[1],$d[2],$d[3],$d[4],$d[5]);
-printf"END TIME = %s\n", dtstr($dtend);
-
-# THEADMIN: 38
-# THEADMAX: 44
 		# HEAD TEMPERATURE LIMITS
 $theadmin=FindInfo($setupfile,"THEADMIN");
-# printf"THEADMIN = %.1f\n", $theadmin;
+printf"THEADMIN = %.1f\n", $theadmin;
 $theadmax=FindInfo($setupfile,"THEADMAX");
-# printf"THEADMAX = %.1f\n", $theadmax;
+printf"THEADMAX = %.1f\n", $theadmax;
 
 $stationpressure=FindInfo($setupfile,"STATION PRESSURE");
-# printf"STATION PRESSURE = %.1f\n", $stationpressure;
+printf"STATION PRESSURE = %.1f\n", $stationpressure;
 
 		# SOLFLUX
 $str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
