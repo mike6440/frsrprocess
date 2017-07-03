@@ -157,6 +157,7 @@ foreach $f (@f) {
 			# READ ALL LINES TO dtend
 			while(<FIN>) {
 				chomp($str=$_);
+				$nread++;
 				if( $str =~ /\$FSR03/ ){
 					$dt=FrsrParse($str);
 					if($dt > $dtend){last}
@@ -179,23 +180,22 @@ foreach $f (@f) {
 }
 print"nread=$nread,  bad checksums=$nbadcheck,   good records: $nrec,    high mode: $nhigh\n";
 
-
-	# OUT SWEEP CHANNELS
-for($ic=1; $ic<=7; $ic++){
-	$fout = $timeseriespath."/da".$ic."raw.txt";
-	print"R$ic, $fout\n";
-	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
-	#print"$str\n";
-	eval $str;
-	$str=sprintf"printf R%d \"Program \$0,  Chan %d,    Run time:%s\\n\";",$ic,$ic,dtstr(now(),'short');
-	#print"$str\n";
-	eval $str;
-	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
-	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
-		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 ed1 ed2 edge shadow\\n\";",$ic;
-	#print"$str\n";
-	eval $str;
-}
+# OUT SWEEP CHANNELS
+# for($ic=1; $ic<=7; $ic++){
+# 	$fout = $timeseriespath."/da".$ic."raw.txt";
+# 	print"R$ic, $fout\n";
+# 	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
+# 	#print"$str\n";
+# 	eval $str;
+# 	$str=sprintf"printf R%d \"Program \$0,  Chan %d,    Run time:%s\\n\";",$ic,$ic,dtstr(now(),'short');
+# 	#print"$str\n";
+# 	eval $str;
+# 	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
+# 	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
+# 		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 ed1 ed2 edge shadow\\n\";",$ic;
+# 	#print"$str\n";
+# 	eval $str;
+# }
 exit 0;
 
 

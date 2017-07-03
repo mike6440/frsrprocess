@@ -20,8 +20,8 @@ comment:
  Several days here.
 end
    avoid leading zeros
-STARTTIME: 2017,6,30,20,0,0
-ENDTIME: 2017,7,1,0,0,0
+STARTTIME: 2017,7,02,0,0,0
+ENDTIME: 2017,7,3,0,0,0
 TIMECORRECTSECS: 0
 
 	# Restrict sweep processing
