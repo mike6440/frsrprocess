@@ -1,5 +1,7 @@
 #!/usr/bin/perl -X
-
+# !! check edit
+# Reads timeseries/da0raw.txt
+# Writes timeseries/
 
 # solflux parameters
 #($In,$Id) = solflux($ze, .05, 1013, .2, .2, .001);
@@ -94,25 +96,24 @@ $missing=-999;
 # OUTPUT da0
 # nrec shrat yyyy MM dd hh mm ss lat lon saz sze pitch roll sog cog sol_n sol_d g1 g2 g3 g4 g5 g6 g7
 #                                deg deg deg deg  deg  deg  m/s degT w/m2 w/m2  v  v  v  v  v  v  v
-my $outfile = "$timeseriespath/da0raw.txt";
+my $outfile = "$timeseriespath/da0.txt";
 open F, ">$outfile" or die"da0raw.txt";
 print"OUTPUT: $outfile\n";
-printf F "Program $0,  Runtime %s\n", dtstr(now);
+printf F "$hdr0\n";
 print F "units:     --gprmc time------- deg deg deg deg  deg  deg  m/s degT w/m2 w/m2  v  v  v  v  v  v  v\n";
 print F "nrec shrat thead yyyy MM dd hh mm ss lat lon saz sze pitch roll sog cog sol_n sol_d g1 g2 g3 g4 g5 g6 g7\n";
-
 #  OPEN THE DA0RAW FILE 
-$da0file = "$timeseriespath/frsr_".$series."_flat.txt";
+$da0file = "$timeseriespath/da0raw.txt";
 print"INPUT: $da0file\n";
 if (! -f $da0file){
 	print"DA0 RAW FILE $da0file DOES NOT EXIST. STOP\n"; 
 	exit 1;
 }
 open D, $da0file or die("FAILS TO OPEN");
-chomp($str=<D>);  #print"$str\n";
-chomp($str=<D>);  #print"$str\n";
-chomp($str=<D>);  #print"$str\n";
-
+chomp($str=<D>);  print"$str\n";
+chomp($str=<D>);  print"$str\n";
+chomp($str=<D>);  print"$str\n";
+die;
 while(<D>) {
 	chomp($str=$_);
 	@w=split(/[ ]+/,$str);
