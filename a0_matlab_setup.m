@@ -3,14 +3,18 @@ disp('Clear');
 global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES
 global MISSING STARTTIME ENDTIME dtstart dtend
 
+[x,str]=system('echo $HOME');
+HOME = strtrim(str);
+disp(['Home path = ',HOME]);
+
 SETUPFILE='0_initialize_frsr_process.txt';
 fprintf('SETUPFILE = %s\n', SETUPFILE);
 
 MISSING=-999;
-fprintf('MISSING %d\n',MISSING);
+disp(['MISSING ',sprintf('%d',MISSING)]);
 
 SERIES = FindInfo(SETUPFILE,'SERIES NAME',':');
-fprintf('SERIES NAME = %s\n',SERIES);
+disp(['SERIES NAME = ',SERIES]);
 
 STARTTIME = FindInfo(SETUPFILE,'STARTTIME',':');
 fprintf('STARTTIME=%s\n', STARTTIME);
@@ -23,9 +27,13 @@ str=['dtend=datenum(',ENDTIME,');'];
 eval(str);
 
 DATAPATH = FindInfo(SETUPFILE,'DATAPATH',':');
+DATAPATH = fullfile(HOME,DATAPATH);
+disp(['DATAPATH = ',DATAPATH]);
 
 TIMESERIESPATH = FindInfo(SETUPFILE,'TIMESERIESPATH',':');
-fprintf('TIMESERIESPATH=%s\n', TIMESERIESPATH);
+TIMESERIESPATH = fullfile(HOME,TIMESERIESPATH);
+disp(['TIMESERIESPATH = ',TIMESERIESPATH]);
 
 IMAGEPATH = FindInfo(SETUPFILE,'IMAGEPATH',':');
-fprintf('IMAGEPATH=%s\n', IMAGEPATH);
+IMAGEPATH = fullfile(HOME,IMAGEPATH);
+disp(['IMAGEPATH = ',IMAGEPATH]);

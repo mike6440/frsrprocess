@@ -100,25 +100,28 @@ my $outfile = "$timeseriespath/da0.txt";
 open F, ">$outfile" or die"da0raw.txt";
 print"OUTPUT: $outfile\n";
 printf F "$hdr0\n";
-print F "units:     --gprmc time------- deg deg deg deg  deg  deg  m/s degT w/m2 w/m2  v  v  v  v  v  v  v\n";
+print F "int  flt   degC  --gprmc time------- deg deg deg deg  deg  deg  m/s degT w/m2 w/m2  mv mv mv mv mv mv mv\n";
 print F "nrec shrat thead yyyy MM dd hh mm ss lat lon saz sze pitch roll sog cog sol_n sol_d g1 g2 g3 g4 g5 g6 g7\n";
 #  OPEN THE DA0RAW FILE 
-$da0file = "$timeseriespath/da0raw.txt";
-print"INPUT: $da0file\n";
-if (! -f $da0file){
-	print"DA0 RAW FILE $da0file DOES NOT EXIST. STOP\n"; 
+$da0raw = "$timeseriespath/da0raw.txt";
+print"INPUT: $da0raw\n";
+if (! -f $da0raw){
+	print"DA0 RAW FILE $da0raw DOES NOT EXIST. STOP\n"; 
 	exit 1;
 }
-open D, $da0file or die("FAILS TO OPEN");
+open D, $da0raw or die("FAILS TO OPEN");
 chomp($str=<D>);  print"$str\n";
 chomp($str=<D>);  print"$str\n";
 chomp($str=<D>);  print"$str\n";
-die;
+
+#===================
+#  READ da0raw.txt 
+#===================
 while(<D>) {
 	chomp($str=$_);
 	@w=split(/[ ]+/,$str);
-	#$i=0; foreach(@w){print"$i $w[$i]\n";$i++}
-	$dt=datesec($w[2],$w[3],$w[4],$w[5],$w[6],$w[7]);
+	$i=0; foreach(@w){print"$i $w[$i]\n";$i++}
+	die; $dt=datesec($w[2],$w[3],$w[4],$w[5],$w[6],$w[7]);
 	if($dt >= $dtstart){
 		$nrec=$w[0];
 		$shrat=$w[34];

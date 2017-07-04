@@ -1,5 +1,5 @@
-global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES
-global MISSING STARTTIME ENDTIME dtstart dtend
+%global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES
+%global MISSING STARTTIME ENDTIME dtstart dtend
 
 
 arrayname='d0r';
@@ -11,27 +11,26 @@ else
 end
 
 dt=d0r.dt;
-dt1=dtstart;  dt2=dtend;
+dt1=STARTTIME;  dt2=ENDTIME;
 [ttk,htk]=MakeHourTicks(dt1, dt2);
+sw=d0r.sol_n .* cos(d0r.sze*pi/180) + d0r.sol_d;
 
-%===================
-%  plot globals
-%===================
 figure('position',[200,100,1000,600]);
-plot(dt,d0r.g11,'k.','markersize',6);
+plot(dt,d0r.g1,'k.','markersize',6);
 grid; datetick; hold on;
 set(gca,'fontname','arial','fontweight','bold','fontsize',14);
 set(gca,'xtick',ttk,'xticklabel',htk);
-plot(dt,d0r.g12,'b.','markersize',6);
+plot(dt,sw,'b.','markersize',6);
+
 set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
-tx=title('Raw global 1-k');
+tx=title('g1(k), Iqbol(b)');
 set(tx,'fontname','arial','fontweight','bold','fontsize',14);
 set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
 xlabel('UTC');ylabel('COUNTS / W/m2');
 cmd=sprintf('saveas(gcf,''%s/d0_g1_Iqbol.png'',''png'');',IMAGEPATH);
 disp(cmd); eval(cmd);
 pause; close;
-return
+
 plottitle='globals';
 figure('position',[200,100,1000,600]);
 plot(dt,d0r.g1,'k.','markersize',6);

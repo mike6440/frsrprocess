@@ -1,5 +1,8 @@
-%global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES
-%global MISSING STARTTIME ENDTIME dtstart dtend
+% MAKE MAT FILES FROM THE RAW FLAT FILES
+clear
+
+global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES
+global MISSING STARTTIME ENDTIME dtstart dtend
 
 % DA0 
 arrayname='d0r';
@@ -20,24 +23,8 @@ else
 	end
 end
 
-eval(['dt=',arrayname,'.dt;']);
-
-
-% START AND END TIMES IF THEY ARE IN THE SETUP FILE
-if strcmp(STARTTIME,'MISSING'), 
-	disp('NO TIME LIMITS. USE THE FULL SERIES'); 
-	dtstart=dt(1); dtend=dt(end);
-else 
-%	eval(['dtstart=datenum(',STARTTIME,');']);
-%	eval(['dtend=datenum(',ENDTIME,');']);
-	cmd=['ix=find(',arrayname,'.dt<dtstart | ',arrayname,'.dt > dtend);'];
-	eval(cmd);
-	if length(ix)>0, disp('Truncate series'); eval([arrayname,'=TruncateRTimeSeries(',arrayname,',ix);']); end
-	cmd=sprintf('save %s %s',matname,arrayname);
-	disp(cmd); eval(cmd);
-end
-eval(['npts=length(',arrayname,'.dt);']);
-fprintf('Series %s, %d points, from %s to %s\n',arrayname,npts,dtstr(dtstart),dtstr(dtend))
+npts=length(d0r.dt);
+fprintf('Series %s, %d points  from %s to %s\n',arrayname,npts,dtstr(d0r.dt(1)),dtstr(d0r.dt(end)))
 
 %====================================================================
 % DAx
@@ -47,7 +34,7 @@ for i=1:7,
 	if exist(arrayname,'var')
 		fprintf('Array %s is already loaded.\n',arrayname);
 	else
-		filename=sprintf('%s/da%draw.txt',TIMESERIESPATH,SERIES,i);
+		filename=sprintf('%s/da%draw.txt',TIMESERIESPATH,i);
 		fprintf('INPUT: %s\n',filename);
 		matname=strcat(filename(1:end-3),'mat');
 		fprintf('MAT: %s\n',matname);
@@ -60,20 +47,6 @@ for i=1:7,
 			disp(cmd); eval(cmd);
 		end
 	end
-	eval(['dt=',arrayname,'.dt;']);
-	% START AND END TIMES IF THEY ARE IN THE SETUP FILE
-	if strcmp(STARTTIME,'MISSING'), 
-		disp('NO TIME LIMITS. USE THE FULL SERIES'); 
-		dtstart=dt(1); dtend=dt(end);
-	else 
-		cmd=['ix=find(',arrayname,'.dt<dtstart | ',arrayname,'.dt > dtend);'];
-		eval(cmd);
-		if length(ix)>0, disp('Truncate series'); eval([arrayname,'=TruncateRTimeSeries(',arrayname,',ix);']); end
-		cmd=sprintf('save %s %s',matname,arrayname);
-		disp(cmd); eval(cmd);
-	end
-	eval(['npts=length(',arrayname,'.dt);']);
-	fprintf('Series %s, %d points, from %s to %s\n',arrayname,npts,dtstr(dtstart),dtstr(dtend));
 end
 
 return

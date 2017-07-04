@@ -1,6 +1,12 @@
 V3 processing--
+Terminal
+* gtfrsr -> ~/Dropbox/swmain/apps/frsrprocess/$
 * 0_setup_isar_proc.txt -- edit for processing
 * 1_make_isar_raw_flat.pl -- makes timeseries/isar_raw_flat.txt	
+Matlab
+* gtfrsr -> code folder
+* a0_matlab_setup.m -> store globals
+* a1_get_mat.m -> reads da0raw.txt and makes a mat file
 
 ========= General testing =======================================
 LASTEDIT: 20170702T043928Z
@@ -20,8 +26,8 @@ comment:
  Several days here.
 end
    avoid leading zeros
-STARTTIME: 2017,7,03,0,0
-ENDTIME: 2017,7,3,19,0,0
+STARTTIME: 2017,7,03,0,0,0
+ENDTIME:   2017,7,03,19,0,0
 TIMECORRECTSECS: 0
 
 	# Restrict sweep processing

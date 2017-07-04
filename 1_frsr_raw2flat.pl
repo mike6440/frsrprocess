@@ -101,7 +101,7 @@ print"OUTPUT: $fout\n";
 open Fout,">$fout" or die;
 printf Fout "Program $0,      Run time:%s\n", dtstr(now(),'short');
 print Fout
-"nr m yyyy MM dd hh mm ss lat      lon        sog cog  mft   t1     t2     p1   p2  r1  r2   g11 g12 g21 g22 g31 g32 g41 g42 g51 g52 g61 g62 g71 g72  shadlim shad ed1 ed2 edge shadow\n";
+"nr m yyyy MM dd hh mm ss lat       lon       sog cog  mft  t1    t2     p1   p2  r1  r2   g11 g12 g21 g22 g31 g32 g41 g42 g51 g52 g61 g62 g71 g72  shadlim shad\n";
 #0 0  2017 05 26 22 56 46 35.84973 -106.27273 0.0 311.4 39.90 50.50 23.60 0.9 0.8 0.7 0.7  40 40 74 76 48 47 39 39 32 33 39 42 41 42   10.0 0.0
 # print Fout 
 # "- -   --  -- -- -- -- -- deg      deg        m/s  dgT  C     C     C      deg  deg deg deg  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv    --    --\n";
