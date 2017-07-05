@@ -1,8 +1,14 @@
+%PLOTS GLOBAL FOR CHANNEL IC AND TIMES SPECIFIED
+global IMAGEPATH
+
 % CHANNEL
-ic=1;
+ic=3;
+
 % TIME TO ANALYZE
 t1=datenum(2017,7,3,13,0,0);
 t2=datenum(2017,7,3,18,0,0);
+
+
 cmd=sprintf('dt=d%dr.dt;',ic); eval(cmd);
 ix=find(dt>=t1 & dt<t2);
 % PULL VARIABLES
@@ -19,7 +25,7 @@ tx=title(str);
 set(tx,'fontname','arial','fontweight','bold','fontsize',14);
 xlabel('UTC');
 ylabel('ADC mv');
-fn=sprintf('/Users/rmr/Dropbox/data/frsr/images/ch%dglobal.png',ic);
+fn=sprintf('%s/ch%dglobal.png',IMAGEPATH,ic);
 disp(['Save plot: ',fn]);
 saveas(gcf,fn,'png');
 pause;

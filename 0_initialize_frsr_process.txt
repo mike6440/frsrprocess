@@ -9,47 +9,42 @@ Matlab
 * a1_get_mat.m -> reads da0raw.txt and makes a mat file
 
 ========= General testing =======================================
+START-SETUP
 LASTEDIT: 20170702T043928Z
-SERIES NAME: lanl
-
+SERIES NAME: 170703
 # paths appended to $HOME
-DATAPATH: Dropbox/data/frsr
-RAWPATH: Dropbox/data/frsr/raw
-TIMESERIESPATH: Dropbox/data/frsr/timeseries
-IMAGEPATH: Dropbox/data/frsr/images
+DATAPATH: data/frsr
+RAWPATH: data/frsr/raw
+TIMESERIESPATH: data/frsr/170703/timeseries
+IMAGEPATH: data/frsr/170703/images
 DataFileKey: capture
-
 MFRSN: 374
-
 comment:
- 170627--scp captured file 
+ daily capture, a sunny day
+ Langley
  Several days here.
 end
-   avoid leading zeros
+	# avoid leading zeros
 STARTTIME: 2017,7,02,19,0,0
 ENDTIME:   2017,7,03,19,0,0
 TIMECORRECTSECS: 0
-
 	# Restrict sweep processing
 THEADMIN: 10
 THEADMAX: 60
-
 	# Compute model clear sky curve
-	# 
 SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
 STATION PRESSURE: 1013
-
 	# GPS fixed information
 GPS FIXED FLAG: 0
 	# LANL beta test site from onboard gps.
 GPS FIXED LATITUDE: 35.850255
 GPS FIXED LONGITUDE: -106.2727
-
 	# TILT fixed information
 TILT FIXED FLAG: 0
 TILT FIXED PITCH: 0
 TILT FIXED ROLL: 0
 EDGE INDEX OFFSET: 4
+EN-SETUP
 	========= General testing =======================================
 	LASTEDIT: 20170622T235929Z
 	SERIES NAME: raw
@@ -88,6 +83,7 @@ EDGE INDEX OFFSET: 4
 	TILT FIXED PITCH: 0
 	TILT FIXED ROLL: 0
 	EDGE INDEX OFFSET: 4
+	END-OF-SETUP
 	========= LANL beta03=======================================
 	LASTEDIT: 170531
 	SERIES NAME: beta03
@@ -134,6 +130,7 @@ EDGE INDEX OFFSET: 4
 	TILT FIXED ROLL: 0
 
 	EDGE INDEX OFFSET: 4
+	END-OF-SETUP
 	========= LANL beta02=======================================
 	LASTEDIT: 170528
 	SERIES NAME: beta02
@@ -179,6 +176,7 @@ EDGE INDEX OFFSET: 4
 	TILT FIXED ROLL: 0
 
 	EDGE INDEX OFFSET: 4
+	END-OF-SETUP
 	========= LANL Beta =======================================
 	LASTEDIT: 170526
 	SERIES NAME: beta01
@@ -219,3 +217,4 @@ EDGE INDEX OFFSET: 4
 	STARTTIME: 2017/5/9 17 0 0
 	ENDTIME: 2017 5 9 23 0 0
 	TIMECORRECTSECS: 0
+	END-OF-SETUP

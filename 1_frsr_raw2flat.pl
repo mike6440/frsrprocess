@@ -47,11 +47,36 @@ if(-f $setupfile){
 } else {
 	print"DOES NOT EXIST. STOP.\n";
 }
+	# SERIES NAME
+$seriesname = FindInfo($setupfile,'SERIES NAME',':');
+print"seriesname=$seriesname\n";
 		# DATAPATH 
 $datapath = $ENV{HOME}.'/'.FindInfo($setupfile,'DATAPATH',':');
 print "DATAPATH = $datapath   ";
 if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
+	# CHECK ON SERIES FOLDER
+$seriespath="$datapath/$seriesname";
+print"seriespath = $seriespath   ";
+if( ! -d $seriespath){
+	print"DOES NOT EXIST, CREATE\n";
+	`mkdir $seriespath`;
+}else{print"EXISTS\n"}
+	# WRITE THE HEADER FILE
+$str= ">$seriespath/$seriesname"."_header.txt";
+print"header file: $str\n";
+open F,$str  or die;
+print F "$hdr0\n";
+print F "SETUP FILE $setupfile\n";
+open F1,$setupfile or die;
+while(<F1>){if($_ =~ /START-SETUP/){last}}
+while(<F1>){
+	chomp($str=$_);
+	if($str =~ /END-SETUP/){last}
+	print F "$str\n";
+}
+close F1; close F;
+die;
 		# RAWPATH 
 $rawpath = $ENV{HOME}.'/'.FindInfo($setupfile,'RAWPATH',':');
 print "RAWPATH = $rawpath   ";
@@ -69,7 +94,6 @@ if ( ! -d $imagepath ) {
 	system "mkdir $imagepath";
 }
 print"imagepath = $imagepath EXISTS\n";
-
 		# START AND END TIMES
 $str = FindInfo($setupfile,'STARTTIME');
 @w= split /[, :\/]/g,$str;
@@ -85,10 +109,6 @@ printf"endtime = %s\n", dtstr($dtend);
 		# TIME CORRECTION
 $seccorrect=FindInfo($setupfile,'TIMECORRECTSECS');
 print"seccorrect=$seccorrect\n";
-
-	# SERIES NAME
-$seriesname = FindInfo($setupfile,'SERIES NAME',':');
-print"seriesname=$seriesname\n";
 		# EDGE OFFSET
 $edgeoffset = FindInfo($setupfile,"EDGE INDEX OFFSET",':');
 print"EDGE INDEX OFFSET = $edgeoffset\n";
