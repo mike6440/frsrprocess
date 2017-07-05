@@ -17,21 +17,29 @@ dt1=dtstart;  dt2=dtend;
 %===================
 %  plot globals
 %===================
-figure('position',[200,100,1000,600]);
-plot(dt,d0r.g11,'k.','markersize',6);
-grid; datetick; hold on;
-set(gca,'fontname','arial','fontweight','bold','fontsize',14);
-set(gca,'xtick',ttk,'xticklabel',htk);
-plot(dt,d0r.g12,'b.','markersize',6);
-set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
-tx=title('Raw global 1-k');
-set(tx,'fontname','arial','fontweight','bold','fontsize',14);
-set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
-xlabel('UTC');ylabel('COUNTS / W/m2');
-cmd=sprintf('saveas(gcf,''%s/d0_g1_Iqbol.png'',''png'');',IMAGEPATH);
-disp(cmd); eval(cmd);
-pause; close;
+for ic=1:7,
+	figure('position',[200,100,1000,600]);
+	str1=sprintf('g%d1',ic);
+	str2=sprintf('g%d2',ic);
+	cmd=sprintf('plot(dt,d0r.g%d1,''b.'',''markersize'',6);',ic);
+	eval(cmd);
+	grid; datetick; hold on;
+	set(gca,'fontname','arial','fontweight','bold','fontsize',14);
+	set(gca,'xtick',ttk,'xticklabel',htk);
+	cmd=sprintf('plot(dt,d0r.g%d2,''m.'',''markersize'',6);',ic);
+	eval(cmd);
+	set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
+	str=sprintf('Raw chan %d global1(b)  2(m)',ic);
+	tx=title(str);
+	set(tx,'fontname','arial','fontweight','bold','fontsize',14);
+	set(gca,'ylim',[-inf,inf],'xlim',[dt1,dt2]);
+	xlabel('UTC');ylabel('COUNTS / W/m2');
+	cmd=sprintf('saveas(gcf,''%s/chan%dglobals.png'',''png'');',IMAGEPATH,ic);
+	disp(cmd); eval(cmd);
+	pause; close;
+end
 return
+
 plottitle='globals';
 figure('position',[200,100,1000,600]);
 plot(dt,d0r.g1,'k.','markersize',6);
