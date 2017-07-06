@@ -10,23 +10,23 @@ Matlab
 
 ========= General testing =======================================
 START-SETUP
-LASTEDIT: 20170702T043928Z
-SERIES NAME: 170703
+LASTEDIT: 20170705T191540Z
+SERIES NAME: 170705
 # paths appended to $HOME
 DATAPATH: data/frsr
-RAWPATH: data/frsr/raw
-TIMESERIESPATH: data/frsr/170703/timeseries
-IMAGEPATH: data/frsr/170703/images
+#RAWPATH: data/frsr/raw
+TIMESERIESPATH: xx
+IMAGEPATH: xx
 DataFileKey: capture
 MFRSN: 374
 comment:
- daily capture, a sunny day
+ continue data acq
  Langley
- Several days here.
+ 2 days
 end
 	# avoid leading zeros
-STARTTIME: 2017,7,02,19,0,0
-ENDTIME:   2017,7,03,19,0,0
+STARTTIME: 2017,7,03,19,0,0
+ENDTIME:   2017,7,05,19,0,0
 TIMECORRECTSECS: 0
 	# Restrict sweep processing
 THEADMIN: 10
@@ -44,7 +44,44 @@ TILT FIXED FLAG: 0
 TILT FIXED PITCH: 0
 TILT FIXED ROLL: 0
 EDGE INDEX OFFSET: 4
-EN-SETUP
+END-SETUP
+	========= General testing =======================================
+	START-SETUP
+	LASTEDIT: 20170702T043928Z
+	SERIES NAME: 170703
+	# paths appended to $HOME
+	DATAPATH: data/frsr
+	RAWPATH: data/frsr/raw
+	TIMESERIESPATH: data/frsr/170703/timeseries
+	IMAGEPATH: data/frsr/170703/images
+	DataFileKey: capture
+	MFRSN: 374
+	comment:
+	 daily capture, a sunny day
+	 Langley
+	 Several days here.
+	end
+		# avoid leading zeros
+	STARTTIME: 2017,7,02,19,0,0
+	ENDTIME:   2017,7,03,19,0,0
+	TIMECORRECTSECS: 0
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+		# Compute model clear sky curve
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 1013
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	EN-SETUP
 	========= General testing =======================================
 	LASTEDIT: 20170622T235929Z
 	SERIES NAME: raw

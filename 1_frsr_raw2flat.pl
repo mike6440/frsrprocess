@@ -37,7 +37,7 @@ $sb = stat($0);
 $hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
 print "$hdr0\n";
 
-$home = $ENV{HOME};
+$home = $ENV{HomePath};
 		# SETUPFILE
 $setupfile='0_initialize_frsr_process.txt';
 chomp($setupfile);
@@ -51,7 +51,7 @@ if(-f $setupfile){
 $seriesname = FindInfo($setupfile,'SERIES NAME',':');
 print"seriesname=$seriesname\n";
 		# DATAPATH 
-$datapath = $ENV{HOME}.'/'.FindInfo($setupfile,'DATAPATH',':');
+$datapath = $ENV{HomePath}.'/'.FindInfo($setupfile,'DATAPATH',':');
 print "DATAPATH = $datapath   ";
 if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
@@ -76,20 +76,19 @@ while(<F1>){
 	print F "$str\n";
 }
 close F1; close F;
-die;
 		# RAWPATH 
-$rawpath = $ENV{HOME}.'/'.FindInfo($setupfile,'RAWPATH',':');
+$rawpath = $datapath.'/raw';
 print "RAWPATH = $rawpath   ";
 if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
 		# TIMESERIESPATH
-$timeseriespath=$ENV{HOME}.'/'.FindInfo($setupfile,"TIMESERIESPATH",":");
+$timeseriespath="$seriespath/timeseries";
 if ( ! -d $timeseriespath ) { 
 	system "mkdir $timeseriespath  EXISTS";
 }
 print"timeseriespath = $timeseriespath\n";
 		# IMAGEPATH
-$imagepath=$ENV{HOME}.'/'.FindInfo($setupfile,"IMAGEPATH",":");
+$imagepath="$seriespath/images";
 if ( ! -d $imagepath ) { 
 	system "mkdir $imagepath";
 }
@@ -129,7 +128,7 @@ print Fout
 	# OUT SWEEP CHANNELS
 for($ic=1; $ic<=7; $ic++){
 	$fout = $timeseriespath."/da".$ic."raw.txt";
-	print"R$ic, $fout\n";
+	#print"R$ic, $fout\n";
 	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
 	#print"$str\n";
 	eval $str;
@@ -152,9 +151,9 @@ for($ic=1; $ic<=7; $ic++){
 foreach $f (@f) {
 	chomp $f;
 	$sb=stat($f);
-	printf"%s, mtime %s\n",$f, dtstr($sb->mtime,'short');
+	#printf"%s, mtime %s\n",$f, dtstr($sb->mtime,'short');
 	#  	FOLDER DATE
-	# /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
+#	 /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
 	if ( $f =~ /20......T......Z/ ){  # pull folder time
 		$ix=index($f,"201");
 		$fdt=dtstr2dt(substr($f,$ix,16));
