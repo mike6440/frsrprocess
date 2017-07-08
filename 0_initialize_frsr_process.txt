@@ -10,13 +10,10 @@ Matlab
 
 ========= General testing =======================================
 START-SETUP
-LASTEDIT: 20170705T191540Z
-SERIES NAME: 170705
-# paths appended to $HOME
+LASTEDIT: 170708
+SERIES NAME: 170708
+# paths appended to $HOME/Dropbox
 DATAPATH: data/frsr
-#RAWPATH: data/frsr/raw
-TIMESERIESPATH: xx
-IMAGEPATH: xx
 DataFileKey: capture
 MFRSN: 374
 comment:
@@ -25,15 +22,20 @@ comment:
  2 days
 end
 	# avoid leading zeros
-STARTTIME: 2017,7,03,19,0,0
-ENDTIME:   2017,7,05,19,0,0
+STARTTIME: 2017,7,7,23,42,0
+ENDTIME:   2017,7,8,19,28,00
 TIMECORRECTSECS: 0
+
+	# LANGLEY
+NUMBER LANGLEY: 0
+
+
 	# Restrict sweep processing
 THEADMIN: 10
 THEADMAX: 60
 	# Compute model clear sky curve
 SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
-STATION PRESSURE: 1013
+STATION PRESSURE: 900
 	# GPS fixed information
 GPS FIXED FLAG: 0
 	# LANL beta test site from onboard gps.
@@ -45,6 +47,88 @@ TILT FIXED PITCH: 0
 TILT FIXED ROLL: 0
 EDGE INDEX OFFSET: 4
 END-SETUP
+	========= General testing =======================================
+	START-SETUP
+	LASTEDIT: 20170708T005142Z
+	SERIES NAME: 170707
+	# paths appended to $HOME/Dropbox
+	DATAPATH: data/frsr
+	DataFileKey: capture
+	MFRSN: 374
+	comment:
+	 continue data acq
+	 Langley
+	 2 days
+	end
+		# avoid leading zeros
+	STARTTIME: 2017,7,5,17,52,0
+	ENDTIME:   2017,7,7,23,30,00
+	TIMECORRECTSECS: 0
+
+		# LANGLEY
+	NUMBER LANGLEY: 1
+	2017,7,6,13,10,0,  2017,7,6,17,33,0
+
+
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+		# Compute model clear sky curve
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 900
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	END-SETUP
+	========= General testing =======================================
+	START-SETUP
+	LASTEDIT: 20170705T191540Z
+	SERIES NAME: 170705
+	# paths appended to $HOME
+	DATAPATH: data/frsr
+	#RAWPATH: data/frsr/raw
+	TIMESERIESPATH: xx
+	IMAGEPATH: xx
+	DataFileKey: capture
+	MFRSN: 374
+	comment:
+	 continue data acq
+	 Langley
+	 2 days
+	end
+		# avoid leading zeros
+	STARTTIME: 2017,7,03,19,0,0
+	ENDTIME:   2017,7,05,19,0,0
+	TIMECORRECTSECS: 0
+
+	# LANGLEY
+NUMBER LANGLEY: 2
+2017,7,5,13,10,0,  2017,7,5,17,33,0
+
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+		# Compute model clear sky curve
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 900
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	END-SETUP
 	========= General testing =======================================
 	START-SETUP
 	LASTEDIT: 20170702T043928Z

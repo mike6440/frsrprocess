@@ -108,9 +108,15 @@ printf"endtime = %s\n", dtstr($dtend);
 		# TIME CORRECTION
 $seccorrect=FindInfo($setupfile,'TIMECORRECTSECS');
 print"seccorrect=$seccorrect\n";
-		# EDGE OFFSET
-$edgeoffset = FindInfo($setupfile,"EDGE INDEX OFFSET",':');
-print"EDGE INDEX OFFSET = $edgeoffset\n";
+	# SOLFLUX PARAMS
+$stationpressure=FindInfo($setupfile,"STATION PRESSURE");
+printf"STATION PRESSURE = %.1f\n", $stationpressure;
+$str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
+print"SOLFLUX PARAMETERS:";
+@solfluxparams=split(/[, ]+/,$str);
+$solfluxparams[1]=$stationpressure;
+foreach(@solfluxparams){print"   $_"}
+print"\n";
 
 #=====================
 # OUT FLAT FILE
@@ -119,13 +125,14 @@ $fout = $timeseriespath."/da0raw.txt";
 print"OUTPUT: $fout\n";
 open Fout,">$fout" or die;
 printf Fout "Program $0,      Run time:%s\n", dtstr(now(),'short');
+#nrec yyyy MM dd hh mm ss lat lon saz sze sw swstd lw lwstd piru tcase tdome pitch pstd roll rstd az sog cog hdg sol_n sol_d
 print Fout
-"nr m yyyy MM dd hh mm ss lat       lon       sog cog  mft  t1    t2     p1   p2  r1  r2   g11 g12 g21 g22 g31 g32 g41 g42 g51 g52 g61 g62 g71 g72  shadlim shad\n";
+"nrec mode yyyy MM dd hh mm ss lat   lon   sog cog saz sze  thead t1    t2     p1  p2  r1  r2  g11 g12 g21 g22 g31 g32 g41 g42 g51 g52 g61 g62 g71 g72  shadlim shad  sol_n  sol_d\n";
 #0 0  2017 05 26 22 56 46 35.84973 -106.27273 0.0 311.4 39.90 50.50 23.60 0.9 0.8 0.7 0.7  40 40 74 76 48 47 39 39 32 33 39 42 41 42   10.0 0.0
 # print Fout 
 # "- -   --  -- -- -- -- -- deg      deg        m/s  dgT  C     C     C      deg  deg deg deg  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv    --    --\n";
 
-	# OUT SWEEP CHANNELS
+	# OUT SWEEP CHANNELS --> da1raw.txt, da2raw.txt, ..., da7raw.txt
 for($ic=1; $ic<=7; $ic++){
 	$fout = $timeseriespath."/da".$ic."raw.txt";
 	#print"R$ic, $fout\n";
@@ -136,24 +143,28 @@ for($ic=1; $ic<=7; $ic++){
 	#print"$str\n";
 	eval $str;
 	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
-	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
-		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 ed1 ed2 edge shadow\\n\";",$ic;
+	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss lat lon saz sze shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
+		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23\\n\";",$ic;
 	#print"$str\n";
 	eval $str;
 }
 
 #=============================
-#  LIST ALL RAW FILES
+#  list all raw files
 #=============================
 @f = `find $rawpath -iname capture* -print`;
 #printf"No. raw files = %d\n",$#f;
-
+#================
+# Read each data folder
+#================
 foreach $f (@f) {
 	chomp $f;
 	$sb=stat($f);
 	#printf"%s, mtime %s\n",$f, dtstr($sb->mtime,'short');
-	#  	FOLDER DATE
-#	 /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
+	#================
+	#  Find starting folder
+	#================
+	#	 /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
 	if ( $f =~ /20......T......Z/ ){  # pull folder time
 		$ix=index($f,"201");
 		$fdt=dtstr2dt(substr($f,$ix,16));
@@ -164,7 +175,9 @@ foreach $f (@f) {
 			#	OPEN AND SCAN THE FILE
 			print "OPEN: $f\n";
 			open FIN, $f or die;
+			#================
 			# FIND THE FIRST LINE WITH START TIME
+			#================
 			while(<FIN>){
 				chomp($str=$_);
 				$nread++;
@@ -173,21 +186,28 @@ foreach $f (@f) {
 					if($dt>=$dtstart){last}
 				}
 			}
-			# READ ALL LINES TO dtend
+			#================
+			# Record all lines to dtend
+			# Low and high modes are mixed
+			#================
 			while(<FIN>) {
 				chomp($str=$_);
 				$nread++;
 				if( $str =~ /\$FSR03/ ){
 					$dt=FrsrParse($str);
 					if($dt > $dtend){last}
-					# IS RECORD INSIDE TIME WINDOW
+					#================
+					# if inside the time window
+					#================
 					if($dt>$dtstart && $dt <= $dtend){
 						$nrec++;
 						print Fout "$nrec $strout\n";
+						#================
+						# add sweeps if present
+						#================
 						if($mode==2){
 							for($ic=1;$ic<=7;$ic++){
 								$str=sprintf"printf R%d \"\$nrec  \$strout%d\\n\";",$ic,$ic;
-								#print"$str\n";
 								eval $str;
 							}
 						}	
@@ -198,23 +218,6 @@ foreach $f (@f) {
 	}
 }
 print"nread=$nread,  bad checksums=$nbadcheck,   good records: $nrec,    high mode: $nhigh\n";
-
-# OUT SWEEP CHANNELS
-# for($ic=1; $ic<=7; $ic++){
-# 	$fout = $timeseriespath."/da".$ic."raw.txt";
-# 	print"R$ic, $fout\n";
-# 	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
-# 	#print"$str\n";
-# 	eval $str;
-# 	$str=sprintf"printf R%d \"Program \$0,  Chan %d,    Run time:%s\\n\";",$ic,$ic,dtstr(now(),'short');
-# 	#print"$str\n";
-# 	eval $str;
-# 	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
-# 	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
-# 		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 ed1 ed2 edge shadow\\n\";",$ic;
-# 	#print"$str\n";
-# 	eval $str;
-# }
 exit 0;
 
 
@@ -286,7 +289,7 @@ sub FrsrParse {
 	my ($strin,$pktlen,$cc,$packetid,$shadow,$shadowthreshold,$ix);
 	my ($ichar,$p,$i,$MfrTemp,$ix1,$ix2,$strgps,$dt,$lat,$lon,$sogmps,$cog,$T1,$T2);
 	my ($pitch1,$pitch2,$roll1,$roll2,$ia,$ib,$ic,$is);
-	my (@w,@g1,@g2,@s,$edge,$imin,$shadow,$swshadow,$ied1,$ied2,$x,$ed1,$ed2);
+	my (@w,@g1,@g2,@s,$imin,$shadow,$swshadow,$x);
 
 	$strin=shift();
 	#print"strin = $strin\n";
@@ -395,15 +398,20 @@ sub FrsrParse {
 		$shadowthreshold = DecodePsuedoAscii2( substr($strin,$ichar,2) )/10;
 		$ichar+=3;
 		#printf"shadow = %.1f   shadowthreshold = %.1f\n",$shadow,$shadowthreshold;
+		# EPHEMERIS
+		($saz,$sze,$ze0) = Ephem($lat, $lon, $dt);
+		($In,$Id) = solflux($ze,@solfluxparams);
+		#printf"solar az=%.1f, zenith=%.1f, Corrected zenith=%.1f\n",$saz,$sze,$ze0;
+		#printf"Theoretical sw direct=%.1f, diffuse=%.1f\n",$In, $Id;
+		
 		# WRITE D0 FILE
-		$strout=sprintf"%s  %s %.5f %.5f %.1f %.1f %.2f %.2f %.2f %.1f %.1f %.1f %.1f  ",
-			$mode, dtstr($dt,'ssv'),$lat,$lon,$sogmps,$cog,$MfrTemp,$T1,$T2,$pitch1,$pitch2,$roll1,$roll2;
-			
+		#nrec yyyy MM dd hh mm ss lat lon saz sze sw swstd lw lwstd piru tcase tdome pitch pstd roll rstd az sog cog hdg sol_n sol_d
+		$strout=sprintf"%s  %s %.5f %.5f %.1f %.1f %.1f %.1f %.2f %.2f %.2f %.1f %.1f %.1f %.1f ",
+			$mode, dtstr($dt,'ssv'),$lat,$lon,$sogmps,$cog,$saz,$sze,$MfrTemp,$T1,$T2,$pitch1,$pitch2,$roll1,$roll2;			
 		for($i=0; $i<7; $i++){
 			$strout=$strout.sprintf"$g1[$i] $g2[$i] ";
 		}
-		$strout=$strout.sprintf"  %.1f %.1f",$shadowthreshold, $shadow;
-		
+		$strout=$strout.sprintf"  %.1f %.1f  %.1f %.1f",$shadowthreshold, $shadow,$In,$Id;
 		# HIGH MODE
 		if($pktlen>300){
 			$mode=2;
@@ -422,7 +430,7 @@ sub FrsrParse {
 			# PRINT OUT SWEEPS
 			# CHANNELS ia = 0...6
 			for($ia=0; $ia<7; $ia++){
-				$str=sprintf("\$strout%d=sprintf\"%%s %%.1f %%.1f %%.1f \",dtstr(\$dt,\'ssv\'),\$shadow,\$g1[%d],\$g2[%d];",
+				$str=sprintf("\$strout%d=sprintf\"%%s %%.6f %%.6f %%.1f %%.1f %%.1f %%.1f %%.1f \",dtstr(\$dt,\'ssv\'),\$lat,\$lon,\$saz,\$sze,\$shadow,\$g1[%d],\$g2[%d];",
 					$ia+1,$ia,$ia);
 				eval $str;
 				@s=();
@@ -434,28 +442,6 @@ sub FrsrParse {
 					$str=sprintf("\$strout%d=\$strout%d.sprintf(\"%%.1f \",\$sw[\$ic]);",$ia+1,$ia+1);
 					eval($str);
 				}
-				#for($ib=0; $ib<23; $ib++){print"$s[$ib]\n"}
-					# MINIMUM
-				$x=1e6;
-				for($ib=0; $ib<23; $ib++){if($s[$ib]>0 && $s[$ib] < $x){$x=$s[$ib]; $imin=$ib} }
-				#print"--> MINIMUM: INDEX=$imin, MIN=$x\n";
-				$swshadow=$x;
-					# EDGE VALUES
-				$ied1=$imin-$edgeoffset;   $ied2=$imin+$edgeoffset;
-				if($ied1<1){ $ed1=-999; } else { $ed1=$s[$ied1]; }
-				if($ied2>23) {$ed2=-999; } else { $ed2=$s[$ied2];}
-				$x=$is=0; if($ed1>0){$x+=$ed1; $is++;}  if($ed2>0){$x+=$ed2; $is++;} 
-				if($is<=0){
-					print"($nrec) no edge: $strout\n";
-					$str1=sprintf "0  0  0  0 %.1f",$shadow;
-				}else{
-					$edge = $x / $is;
-					#print"--> EDGE: ied=($ied1,$ied2),  ed1=$ed1, ed2=$ed2, edge=$edge\n";
-					$str1=sprintf "%.1f %.1f %.1f %.1f",$ed1,$ed2,$edge,$swshadow;
-				}
-				$cmd=sprintf"\$strout%d=\$strout%d.\$str1;",$ia+1,$ia+1; 
-				eval($cmd);
-
 			}
 # 			print"(0) $strout\n\n";
 # 			print"(1) $strout1\n\n";
