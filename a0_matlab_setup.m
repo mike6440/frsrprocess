@@ -3,6 +3,8 @@ disp('Clear');
 global SETUPFILE DATAPATH TIMESERIESPATH IMAGEPATH SERIES SERIESPATH
 global MISSING STARTTIME ENDTIME dtstart dtend
 global Nlang DTlang
+% edgevector [edge ed1 ed2 i1 i2] for each sweep in langley IL
+global D IC IL SZE AM sw EDGE SHADOW
 
 [x,str]=system('echo $HOME');
 HOME = fullfile(strtrim(str),'/Dropbox');
@@ -44,36 +46,29 @@ eval(str);
 % LANGLEY TIMES
 %===============
 str=FindInfo(SETUPFILE,'NUMBER LANGLEY');
-if length(str)==0,
-	disp('No Langlet plots in this series.');
-	Nlang=0;
+if strcmpi(str,'MISSING'), disp('NUMBER LANGLEY is missing, set to 0'), Nland=0; end 
+disp(['NUMBER LANGLEY = ',str]);
+Nlang=str2num(str);
+if Nlang==0, disp('No Langley plots in this series.');
 else
-	%===============
-	% Pull Langley times
-	%===============
-	Nlang=str2num(str);
-	fprintf('%d Langley plots.\n',Nlang);
-	F=fopen(SETUPFILE);
-	% Move pointer to Langley times
-	while(1),
-		str=fgetl(F);
-		%disp(str);
-		if length(strfind(str,'NUMBER LANGLEY')) > 0,
-			break;
-		end
-		if feof(F), break, end
-	end
 	% Read each time and make array dtlang n x 
 	DTlang=[];
 	for i=1:Nlang,
-		str=fgetl(F);
-		c=strsplit(str);
-		cmd=sprintf('a=datenum(%s);',c{1}(1:end-1));
+		s=sprintf('L%d',i);
+		str=FindInfo(SETUPFILE,s);
+		if strcmpi(str,'MISSING'), error([s,' line is missing']), end 
+		% splits on commas
+		c=strsplit(str,',');
+		if length(c) ~= 12, error([s,' line is in error.']), end
+		cmd=sprintf('a=datenum(%s,%s,%s,%s,%s,%s);',c{1},c{2},c{3},c{4},c{5},c{6});
 		eval(cmd); 
-		cmd=sprintf('b=datenum(%s);',c{2}(1:end));
+		cmd=sprintf('b=datenum(%s,%s,%s,%s,%s,%s);',c{7},c{8},c{9},c{10},c{11},c{12});
 		eval(cmd); 
 		DTlang=[DTlang; [a b] ];
-		fprintf('%d  %s  to %s\n',i,dtstr(a,'short'),dtstr(b,'short'));
+		fprintf('%d  %s  to  %s\n',i,dtstr(a,'short'),dtstr(b,'short'));
 	end	
 end
 
+IL=1; IC=3; EDGE=[];
+
+disp('END OF A0');
