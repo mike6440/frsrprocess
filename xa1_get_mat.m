@@ -7,12 +7,12 @@ global MISSING STARTTIME ENDTIME dtstart dtend
 % DA0 
 arrayname='d0r';
 if exist(arrayname,'var')
-	fprintf('Array %s is already loaded.\n',arrayname);
+	%fprintf('Array %s is already loaded.\n',arrayname);
 else
 	filename=sprintf('%s/da0raw.txt',TIMESERIESPATH);
-	fprintf('INPUT: %s\n',filename);
+	%fprintf('INPUT: %s\n',filename);
 	matname=strcat(filename(1:end-3),'mat');
-	fprintf('MAT: %s\n',matname);
+	%fprintf('MAT: %s\n',matname);
 	if exist(matname,'file')
 		cmd=sprintf('load %s',matname);
 		disp(cmd); eval(cmd);
@@ -30,14 +30,14 @@ fprintf('Series %s, %d points  from %s to %s\n',arrayname,npts,dtstr(d0r.dt(1)),
 % DAx
 for i=1:7, 
 	cmd=sprintf('arrayname=''d%dr'';',i);
-	disp(cmd);eval(cmd);
+	eval(cmd);
 	if exist(arrayname,'var')
-		fprintf('Array %s is already loaded.\n',arrayname);
+		%fprintf('Array %s is already loaded.\n',arrayname);
 	else
 		filename=sprintf('%s/da%draw.txt',TIMESERIESPATH,i);
-		fprintf('INPUT: %s\n',filename);
+		%fprintf('INPUT: %s\n',filename);
 		matname=strcat(filename(1:end-3),'mat');
-		fprintf('MAT: %s\n',matname);
+		%fprintf('MAT: %s\n',matname);
 		if exist(matname,'file')
 			cmd=sprintf('load %s',matname);
 			disp(cmd); eval(cmd);

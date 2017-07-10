@@ -71,4 +71,48 @@ end
 
 IL=1; IC=3; EDGE=[];
 
+%========================
+% GET THE DATA 
+%=======================
+% DA0 
+arrayname='d0r';
+if exist(arrayname,'var')
+	%fprintf('Array %s is already loaded.\n',arrayname);
+else
+	filename=sprintf('%s/da0raw.txt',TIMESERIESPATH);
+	%fprintf('INPUT: %s\n',filename);
+	matname=strcat(filename(1:end-3),'mat');
+	%fprintf('MAT: %s\n',matname);
+	if exist(matname,'file')
+		cmd=sprintf('load %s',matname);
+		disp(cmd); eval(cmd);
+	else
+		ReadRTimeSeries;
+		cmd=sprintf('save %s %s',matname,arrayname);
+		disp(cmd); eval(cmd);
+	end
+end
+%====== DAX ==============================================================
+for i=1:7, 
+	cmd=sprintf('arrayname=''d%dr'';',i);
+	eval(cmd);
+	if exist(arrayname,'var')
+		%fprintf('Array %s is already loaded.\n',arrayname);
+	else
+		filename=sprintf('%s/da%draw.txt',TIMESERIESPATH,i);
+		%fprintf('INPUT: %s\n',filename);
+		matname=strcat(filename(1:end-3),'mat');
+		%fprintf('MAT: %s\n',matname);
+		if exist(matname,'file')
+			cmd=sprintf('load %s',matname);
+			disp(cmd); eval(cmd);
+		else
+			ReadRTimeSeries;
+			cmd=sprintf('save %s %s',matname,arrayname);
+			disp(cmd); eval(cmd);
+		end
+	end
+end
+
+
 disp('END OF A0');
