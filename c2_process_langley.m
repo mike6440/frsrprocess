@@ -74,11 +74,44 @@ lgndav=log(ndav);
 %  remove nans
 ix=find(isnan(lgndav));
 amav(ix)=[];  lgndav(ix)=[];
+% Only take atmmass > 1.8
+ix=find(amav<1.8);
+amav(ix)=[];  lgndav(ix)=[];
+
+
 p=polyfit(amav,lgndav,1);
 v0av=exp(p(2));
 v0avstr=sprintf('Langly %d Avg: ze [%.1f %.1f], amass [%.1f %.1f], v0=%.1f',...
 	IL,szeav(1),szeav(end),amav(1),amav(end),v0av);
 disp(v0avstr);
 
+%==============================================================
+plot(AM,lgnd,'.b','markersize',8);grid;hold on
+set(gca,'xlim',[0,6]);
+plot(amav,lgndav,'om','markersize',4,'markerfacecolor','m');
+
+amavx=sort([0; sort(amav)]);
+xav = polyval(p,amavx);
+plot(amavx,xav,'-k','linewidth',2);
+
+set(gca,'fontname','arial','fontweight','bold','fontsize',12);
+str=sprintf('%s, %d, CH-%d: raw(b)  avg(m)  fit(k)',SERIES,IL,IC);
+tx=title(str);
+set(tx,'fontname','arial','fontweight','bold','fontsize',14);
+xlabel('Atm Mass')
+ylabel('LOG(Normal Direct Radiance)');
+
+str=sprintf('L%d_Ch%d_LangleyPlot.png',IL,IC);
+cmd=sprintf('saveas(gcf,''%s'',''png'');',fullfile(IMAGEPATH,str));
+disp(cmd); eval(cmd);
+pause; close;
+
 
 disp('END OF C2');
+return
+
+
+
+
+
+

@@ -11,7 +11,14 @@ use perltools::MRradiation;
 use perltools::MRstatistics;
 use perltools::Prp;
 use File::stat;
-	# VARIABLES
+#use Time::localtime;
+#use POSIX;
+#use File::Basename;
+
+
+# my $epoch_timestamp = (stat($fh))[9];
+# my $timestamp       = localtime($epoch_timestamp);
+
 my ($sb, $hdr0);
 my ($setupfile,$datapath,$timeseriespath,$imagepath,$home);
 my ($str,$str1,$cmd,$dtstart,$dtend,$seccorrect,$fout,$rawfile,$nrec,$nread,$dt);
@@ -20,7 +27,6 @@ my ($mode,$imin);
 my ($strout1,$strout2,$strout3,$strout4,$strout5,$strout6,$strout7);
 my (@w,@sw);
 my $nbadcheck=0;
-	# INITIALIZE 
 $nread=0; # total number of $FSR03 records
 $nrec=0; # record written to the output, da0, file. 
 $nhigh=0;  #packets in high/transition mode
@@ -30,6 +36,7 @@ $sb = stat($0);
 # printf "mtime %s\n",dtstr($sb->mtime,'short');
 $hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
 print "$hdr0\n";
+
 $home = $ENV{HomePath};
 		# SETUPFILE
 $setupfile='0_initialize_frsr_process.txt';
@@ -40,7 +47,7 @@ if(-f $setupfile){
 } else {
 	print"DOES NOT EXIST. STOP.\n";
 }
-die;	# SERIES NAME
+	# SERIES NAME
 $seriesname = FindInfo($setupfile,'SERIES NAME',':');
 print"seriesname=$seriesname\n";
 		# DATAPATH 

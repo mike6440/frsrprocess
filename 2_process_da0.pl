@@ -24,7 +24,7 @@ $sb = stat($0);
 $hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
 print "$hdr0\n";
 
-$home = $ENV{HOME};
+$home = $ENV{HomePath};
 		# SETUPFILE
 $setupfile='0_initialize_frsr_process.txt';
 chomp($setupfile);
@@ -35,27 +35,27 @@ if(-f $setupfile){
 	print"DOES NOT EXIST. STOP.\n";
 }
 		# DATAPATH 
-$datapath = $ENV{HOME}.'/'.FindInfo($setupfile,'DATAPATH',':');
+$datapath = FindInfo($setupfile,'DATAPATH',':');
 print "DATAPATH = $datapath   ";
 if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
 		# RAWPATH 
-$rawpath = $ENV{HOME}.'/'.FindInfo($setupfile,'RAWPATH',':');
+$rawpath = FindInfo($setupfile,'RAWPATH',':');
 print "RAWPATH = $rawpath   ";
 if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
 		# TIMESERIESPATH
-$timeseriespath=$ENV{HOME}.'/'.FindInfo($setupfile,"TIMESERIESPATH",":");
+$timeseriespath=FindInfo($setupfile,"TIMESERIESPATH",":");
 if ( ! -d $timeseriespath ) { 
 	system "mkdir $timeseriespath  EXISTS";
 }
-print"timeseriespath = $timeseriespath\n";
-		# IMAGEPATH
-$imagepath=$ENV{HOME}.'/'.FindInfo($setupfile,"IMAGEPATH",":");
-if ( ! -d $imagepath ) { 
-	system "mkdir $imagepath";
+print"TIMESERIESPATH = $timeseriespath\n";
+		# IMAGESPATH
+$imagespath=FindInfo($setupfile,"IMAGESPATH",":");
+if ( ! -d $imagespath ) { 
+	system "mkdir $imagespath";
 }
-print"imagepath = $imagepath EXISTS\n";
+print"IMAGESPATH = $imagespath EXISTS\n";
 
 		# HEAD TEMPERATURE LIMITS
 $theadmin=FindInfo($setupfile,"THEADMIN");
@@ -66,22 +66,20 @@ printf"THEADMAX = %.1f\n", $theadmax;
 $stationpressure=FindInfo($setupfile,"STATION PRESSURE");
 printf"STATION PRESSURE = %.1f\n", $stationpressure;
 
-		# SOLFLUX
+	# SOLFLUX
 $str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
 print"SOLFLUX PARAMETERS:";
 @solfluxparams=split(/[, ]+/,$str);
 $solfluxparams[1]=$stationpressure;
 foreach(@solfluxparams){print"   $_"}
 print"\n";
-
-		# GPS location :  39.99109  -105.26070
+	# FIXED GPS 
 $FixedLocation = FindInfo($setupfile,"GPS FIXED FLAG");
 if($FixedLocation == 1){
 	$latfix=FindInfo($setupfile,"GPS FIXED LATITUDE",':');
 	$lonfix=FindInfo($setupfile,"GPS FIXED LONGITUDE",':');
 	printf"USING FIXED LOCATION  %.6f   %.6f\n",$latfix,$lonfix;
 }
-
 	# FIXED TILT
 $FixedTilt = FindInfo($setupfile,"TILT FIXED FLAG",':');
 if($FixedTilt == 1){
@@ -90,10 +88,9 @@ if($FixedTilt == 1){
 	$hdgfix=FindInfo($setupfile,"TILT FIXED HEADING",':');
 	printf"USING FIXED TILT  pitch=%.1f   roll=%.1f\n",$pitchfix,$rollfix;
 }
-
+	# missing
 $missing=-999;
-
-# OUTPUT da0
+	# OUTPUT da0
 # nrec shrat yyyy MM dd hh mm ss lat lon saz sze pitch roll sog cog sol_n sol_d g1 g2 g3 g4 g5 g6 g7
 #                                deg deg deg deg  deg  deg  m/s degT w/m2 w/m2  v  v  v  v  v  v  v
 my $outfile = "$timeseriespath/da0.txt";
