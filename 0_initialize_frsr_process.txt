@@ -8,13 +8,36 @@ Matlab
 * a0_matlab_setup.m -> store globals
 * a1_get_mat.m -> reads da0raw.txt and makes a mat file
 
-========= 170804 =======================================
-SERIES NAME: 170804
-# paths appended to $HOME/Dropbox
-DATAPATH: /Users/rmr/Dropbox/data/frsr
-RAWPATH: /Users/rmr/Dropbox/data/frsr/raw
-TIMESERIESPATH: /Users/rmr/Dropbox/data/frsr/170804/timeseries
-IMAGESPATH: /Users/rmr/Dropbox/data/frsr/170804/images
+========= 171028 leg 1 =======================================
+	#START-SETUP
+SERIES NAME: V1
+DATAPATH: /Users/rmr/data/20171028_marcus_v1/frsr
+TIMESERIESPATH: /Users/rmr/data/20171028_marcus_v1/timeseries
+IMAGESPATH: /Users/rmr/data/20171028_marcus_v1/images
+	# avoid leading zeros
+TIMECORRECTSECS: 0
+STARTTIME: 2017,10,27,21,14,18
+ENDTIME:   2017,11,04,22,13,15
+========= 171024 vtrial =======================================
+	#START-SETUP
+SERIES NAME: Vtrial
+DATAPATH: /Users/rmr/data/frsr/171024_vtrials/archive/data
+TIMESERIESPATH: /Users/rmr/data/frsr/171024_vtrials/timeseries
+IMAGESPATH: /Users/rmr/data/frsr/171024_vtrials/images
+	# avoid leading zeros
+TIMECORRECTSECS: 0
+STARTTIME: 2017,10,20,00,00,00
+ENDTIME:   2017,10,23,23,59,59
+========= 171007 =======================================
+START-SETUP
+SERIES NAME: 171027
+DATAPATH: /Users/rmr/data/frsr/171027_aa_port
+TIMESERIESPATH: /Users/rmr/data/frsr/171027_aa_port/timeseries
+IMAGESPATH: /Users/rmr/data/frsr/171027_aa_port/images
+	# avoid leading zeros
+TIMECORRECTSECS: 0
+STARTTIME: 2017,10,27,00,00,00
+ENDTIME:   2017,10,27,23,59,59
 THEADMIN: 30
 THEADMAX: 50
 DataFileKey: capture
@@ -24,10 +47,6 @@ comment:
  Rainy evening
  Cloudy sunrise --> no Langleys
 end
-	# avoid leading zeros
-STARTTIME: 2017,8,1,15,2,36
-ENDTIME:   2017,8,4,17,07,0
-TIMECORRECTSECS: 0
 
 	# LANGLEY 170711
 NUMBER LANGLEY: 0
@@ -44,6 +63,81 @@ TILT FIXED PITCH: 0
 TILT FIXED ROLL: 0
 EDGE INDEX OFFSET: 4
 END-SETUP
+	========= 171007 =======================================
+	START-SETUP
+	SERIES NAME: 171007
+	DATAPATH: /Users/rmr/Dropbox/data/frsr/171007
+	TIMESERIESPATH: /Users/rmr/Dropbox/data/frsr/171007/timeseries
+	IMAGESPATH: /Users/rmr/Dropbox/data/frsr/171007/images
+		# avoid leading zeros
+	TIMECORRECTSECS: 0
+	STARTTIME: 2017,5,26,22,56,46
+	ENDTIME:   2017,5,27,17,27,14
+		STARTTIME: 2017,5,27,16,6,0
+		ENDTIME:   2017,5,27,16,20,0
+
+
+	THEADMIN: 30
+	THEADMAX: 50
+	DataFileKey: capture
+	MFRSN: 374
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	comment:
+	 Rainy evening
+	 Cloudy sunrise --> no Langleys
+	end
+
+		# LANGLEY 170711
+	NUMBER LANGLEY: 0
+	L1: 2017,07,10,12,36,44,  2017,07,10,17,42,20
+
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	END-SETUP
+	========= 170804 =======================================
+	SERIES NAME: 170804
+	# paths appended to $HOME/Dropbox
+	DATAPATH: /Users/rmr/Dropbox/data/frsr
+	RAWPATH: /Users/rmr/Dropbox/data/frsr/raw
+	TIMESERIESPATH: /Users/rmr/Dropbox/data/frsr/170804/timeseries
+	IMAGESPATH: /Users/rmr/Dropbox/data/frsr/170804/images
+	THEADMIN: 30
+	THEADMAX: 50
+	DataFileKey: capture
+	MFRSN: 374
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	comment:
+	 Rainy evening
+	 Cloudy sunrise --> no Langleys
+	end
+		# avoid leading zeros
+	STARTTIME: 2017,8,1,15,2,36
+	ENDTIME:   2017,8,4,17,07,0
+	TIMECORRECTSECS: 0
+
+		# LANGLEY 170711
+	NUMBER LANGLEY: 0
+	L1: 2017,07,10,12,36,44,  2017,07,10,17,42,20
+
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	END-SETUP
 	========= 170713 =======================================
 	SERIES NAME: 170713
 	# paths appended to $HOME/Dropbox
@@ -238,50 +332,50 @@ END-SETUP
 	TILT FIXED ROLL: 0
 	EDGE INDEX OFFSET: 4
 	END-SETUP
-========= General testing =======================================
-START-SETUP
-SERIES NAME: 170712
-# paths appended to $HOME
-DATAPATH: data/frsr
-#RAWPATH: data/frsr/raw
-TIMESERIESPATH: xx
-IMAGEPATH: xx
-DataFileKey: capture
-MFRSN: 374
-comment:
- continue data acq
- Langley
- 2 days
-end
-	# avoid leading zeros
-STARTTIME: 2017,7,03,19,0,0
-ENDTIME:   2017,7,05,19,0,0
-TIMECORRECTSECS: 0
+	========= General testing =======================================
+	START-SETUP
+	SERIES NAME: 170712
+	# paths appended to $HOME
+	DATAPATH: data/frsr
+	#RAWPATH: data/frsr/raw
+	TIMESERIESPATH: xx
+	IMAGEPATH: xx
+	DataFileKey: capture
+	MFRSN: 374
+	comment:
+	 continue data acq
+	 Langley
+	 2 days
+	end
+		# avoid leading zeros
+	STARTTIME: 2017,7,03,19,0,0
+	ENDTIME:   2017,7,05,19,0,0
+	TIMECORRECTSECS: 0
 
-# LANGLEY
-NUMBER LANGLEY: 2
-#L1: 2017,07,03,23,16,53,  2017,07,04,00,30,0
-L1: 2017,07,04,13,02,27,  2017,07,04,17,16,23
-L2: 2017,07,05,11,40,58,  2017,07,05,17,26,26
+	# LANGLEY
+	NUMBER LANGLEY: 2
+	#L1: 2017,07,03,23,16,53,  2017,07,04,00,30,0
+	L1: 2017,07,04,13,02,27,  2017,07,04,17,16,23
+	L2: 2017,07,05,11,40,58,  2017,07,05,17,26,26
 
 
-	# Restrict sweep processing
-THEADMIN: 10
-THEADMAX: 60
-	# Compute model clear sky curve
-SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
-STATION PRESSURE: 900
-	# GPS fixed information
-GPS FIXED FLAG: 0
-	# LANL beta test site from onboard gps.
-GPS FIXED LATITUDE: 35.850255
-GPS FIXED LONGITUDE: -106.2727
-	# TILT fixed information
-TILT FIXED FLAG: 0
-TILT FIXED PITCH: 0
-TILT FIXED ROLL: 0
-EDGE INDEX OFFSET: 4
-END-SETUP
+		# Restrict sweep processing
+	THEADMIN: 10
+	THEADMAX: 60
+		# Compute model clear sky curve
+	SOLFLUX PARAMETERS: .05, 1013, .2, .2, .001
+	STATION PRESSURE: 900
+		# GPS fixed information
+	GPS FIXED FLAG: 0
+		# LANL beta test site from onboard gps.
+	GPS FIXED LATITUDE: 35.850255
+	GPS FIXED LONGITUDE: -106.2727
+		# TILT fixed information
+	TILT FIXED FLAG: 0
+	TILT FIXED PITCH: 0
+	TILT FIXED ROLL: 0
+	EDGE INDEX OFFSET: 4
+	END-SETUP
 	========= General testing =======================================
 	START-SETUP
 	LASTEDIT: 20170705T191540Z

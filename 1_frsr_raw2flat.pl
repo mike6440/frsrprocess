@@ -11,6 +11,10 @@ use perltools::MRradiation;
 use perltools::MRstatistics;
 use perltools::Prp;
 use File::stat;
+
+use Time::Zone;
+my $offset_sec = tz_local_offset(); # or tz_offset($tz) if you have the TZ
+                                    # in a variable and it is not local
 	# VARIABLES
 my ($sb, $hdr0);
 my ($setupfile,$datapath,$timeseriespath,$imagepath,$home);
@@ -24,40 +28,51 @@ my $nbadcheck=0;
 $nread=0; # total number of $FSR03 records
 $nrec=0; # record written to the output, da0, file. 
 $nhigh=0;  #packets in high/transition mode
-
-$sb = stat($0);
-# printf "mtime %s\n",scalar localtime $sb->mtime;
-# printf "mtime %s\n",dtstr($sb->mtime,'short');
-$hdr0=sprintf "PROGRAM $0, Edittime %s, Runtime %s",dtstr($sb->mtime,'short'),dtstr(now(),'short');
-print "$hdr0\n";
-$home = $ENV{HomePath};
 		# SETUPFILE
 $setupfile='0_initialize_frsr_process.txt';
 chomp($setupfile);
-print"SETUP FILE = $setupfile   ";
 if(-f $setupfile){
-	print"EXISTS.\n";
+	#print"EXISTS.\n";
 } else {
+	print"SETUP FILE = $setupfile   ";
 	print"DOES NOT EXIST. STOP.\n";
 }
-die;	# SERIES NAME
-$seriesname = FindInfo($setupfile,'SERIES NAME',':');
-print"seriesname=$seriesname\n";
-		# DATAPATH 
-$datapath = $ENV{HomePath}.'/'.FindInfo($setupfile,'DATAPATH',':');
-print "DATAPATH = $datapath   ";
-if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
-else {print "EXISTS.\n"}
-	# CHECK ON SERIES FOLDER
-$seriespath="$datapath/$seriesname";
-print"seriespath = $seriespath   ";
-if( ! -d $seriespath){
-	print"DOES NOT EXIST, CREATE\n";
-	`mkdir $seriespath`;
-}else{print"EXISTS\n"}
-	# WRITE THE HEADER FILE
-$str= ">$seriespath/$seriesname"."_header.txt";
-print"header file: $str\n";
+	# DATAPATH 
+my $datapath = FindInfo($setupfile,'DATAPATH',':');
+if ( ! -d $datapath ) { 
+	print "DATAPATH = $datapath   ";
+	print"DOES NOT EXIST. STOP.\n"; exit 1}
+#else {print "EXISTS.\n"}
+	# TIMESERIESPATH
+my $timeseriespath = FindInfo($setupfile,'TIMESERIESPATH',':');
+if ( ! -d $timeseriespath ) { 
+	print "TIMESERIESPATH = $timeseriespath  ";
+	print"DOES NOT EXIST. CREATE.\n";
+	system "mkdir $timeseriespath";
+}
+	# IMAGESPATH
+my $imagespath = FindInfo($setupfile,'IMAGESPATH',':');
+if ( ! -d $imagespath ) { 
+	print "IMAGESPATH = $imagespath   ";
+	print"DOES NOT EXIST. CREATE.\n";
+	system "mkdir $imagespath";
+}
+	# TIME CORRECTION
+$seccorrect=FindInfo($setupfile,'TIMECORRECTSECS');
+# print"seccorrect=$seccorrect\n";
+	# START TIME
+$starttime = FindInfo($setupfile,'STARTTIME');
+$cmd=sprintf "\$dtstart = datesec($starttime);";
+eval $cmd;
+printf"starttime = %s\n", dtstr($dtstart);
+	# END TIME
+$endtime = FindInfo($setupfile,'ENDTIME');
+$cmd=sprintf "\$dtend = datesec($endtime);";
+eval $cmd;
+printf"endtime = %s\n", dtstr($dtend);
+	# HEADER FILE, SETUPFILE FROM START TO END
+$str= ">$timeseriespath/header.txt";
+print"HEADER $str\n";
 open F,$str  or die;
 print F "$hdr0\n";
 print F "SETUP FILE $setupfile\n";
@@ -68,385 +83,210 @@ while(<F1>){
 	if($str =~ /END-SETUP/){last}
 	print F "$str\n";
 }
+AddHeader();
 close F1; close F;
-		# RAWPATH 
-$rawpath = $datapath.'/raw';
-print "RAWPATH = $rawpath   ";
-if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
-else {print "EXISTS.\n"}
-		# TIMESERIESPATH
-$timeseriespath="$seriespath/timeseries";
-if ( ! -d $timeseriespath ) { 
-	system "mkdir $timeseriespath  EXISTS";
-}
-print"timeseriespath = $timeseriespath\n";
-		# IMAGEPATH
-$imagepath="$seriespath/images";
-if ( ! -d $imagepath ) { 
-	system "mkdir $imagepath";
-}
-print"imagepath = $imagepath EXISTS\n";
-		# START AND END TIMES
-$str = FindInfo($setupfile,'STARTTIME');
-@w= split /[, :\/]/g,$str;
-$cmd=sprintf "\$dtstart = datesec($w[0],$w[1],$w[2],$w[3],$w[4],$w[5]);";
-eval $cmd;
-printf"starttime = %s\n", dtstr($dtstart);
-		# END
-$str = FindInfo($setupfile,'ENDTIME');
-@w= split /[, :\/]/g,$str;
-$cmd=sprintf "\$dtend = datesec($w[0],$w[1],$w[2],$w[3],$w[4],$w[5]);";
-eval $cmd;
-printf"endtime = %s\n", dtstr($dtend);
-		# TIME CORRECTION
-$seccorrect=FindInfo($setupfile,'TIMECORRECTSECS');
-print"seccorrect=$seccorrect\n";
-	# SOLFLUX PARAMS
-$stationpressure=FindInfo($setupfile,"STATION PRESSURE");
-printf"STATION PRESSURE = %.1f\n", $stationpressure;
-$str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
-print"SOLFLUX PARAMETERS:";
-@solfluxparams=split(/[, ]+/,$str);
-$solfluxparams[1]=$stationpressure;
-foreach(@solfluxparams){print"   $_"}
-print"\n";
 
-#=====================
-# OUT FLAT FILE
-#=====================
+	# DA0 RAW INTERP FILE
 $fout = $timeseriespath."/da0raw.txt";
 print"OUTPUT: $fout\n";
 open Fout,">$fout" or die;
 printf Fout "Program $0,      Run time:%s\n", dtstr(now(),'short');
-#nrec yyyy MM dd hh mm ss lat lon saz sze sw swstd lw lwstd piru tcase tdome pitch pstd roll rstd az sog cog hdg sol_n sol_d
 print Fout
-"nrec mode yyyy MM dd hh mm ss lat   lon   sog cog saz sze  thead t1    t2     p1  p2  r1  r2  g11 g12 g21 g22 g31 g32 g41 g42 g51 g52 g61 g62 g71 g72  shadlim shad  sol_n  sol_d\n";
-#0 0  2017 05 26 22 56 46 35.84973 -106.27273 0.0 311.4 39.90 50.50 23.60 0.9 0.8 0.7 0.7  40 40 74 76 48 47 39 39 32 33 39 42 41 42   10.0 0.0
-# print Fout 
-# "- -   --  -- -- -- -- -- deg      deg        m/s  dgT  C     C     C      deg  deg deg deg  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv  mv    --    --\n";
-
-	# OUT SWEEP CHANNELS --> da1raw.txt, da2raw.txt, ..., da7raw.txt
+"mode,yyyy,MM,dd,hh,mm,ss,lat,lon,sog,cog,thead,t1,t2,p1,p2,r1,r2,shad,shadlim,saz,sze,g11,g12,g21,g22,g31,g32,g41,g42,g51,g52,g61,g62,g71,g72\n";
+	# DAn SWEEP CHANNELS --> da1raw.txt, da2raw.txt, ..., da7raw.txt
 for($ic=1; $ic<=7; $ic++){
 	$fout = $timeseriespath."/da".$ic."raw.txt";
-	#print"R$ic, $fout\n";
 	$str=sprintf"open R%d,\">%s\" or die;",$ic, $fout;
 	#print"$str\n";
 	eval $str;
 	$str=sprintf"printf R%d \"Program \$0,  Chan %d,    Run time:%s\\n\";",$ic,$ic,dtstr(now(),'short');
 	#print"$str\n";
 	eval $str;
-	#                        0 2017 05 27 16 06 01 22.2 578.0 580.0 581.0 575.0 591.0 598.0 600.0 599.0 597.0 593.0 579.0 189.0 61.0 51.0 85.0 504.0 581.0 581.0 581.0 582.0 580.0 576.0 579.0 0.0 0.0
-	$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss lat lon saz sze shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
-		"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23\\n\";",$ic;
+	$str=sprintf"print R%d \"yyyy,MM,dd,hh,mm,ss,lat,lon,saz,sze,shad,g1,g2,  s01,s02,s03,s04,s05,s06,s07,s08,s09,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23\\n\";",$ic;
 	#print"$str\n";
 	eval $str;
 }
 
-#=============================
-#  list all raw files
-#=============================
-@f = `find $rawpath -iname capture* -print`;
-#printf"No. raw files = %d\n",$#f;
-#================
-# Read each data folder
-#================
+	# PROCESS ALL FILES
+	# After download from Fetch the tar files are opened and have names such as "marfrsrM1.00.20171029.001001.raw.txt Folder"
+	# find ~/data/20171028_marcus_v1/frsr/*.raw*Folder -iname marfrsr*_interp_* -print
+@f = `find $datapath/*.raw*Folder -iname marfrsr*_interp_* -print`;
+foreach(@f){print"$_\n"} die;
 foreach $f (@f) {
 	chomp $f;
-	$sb=stat($f);
-	#printf"%s, mtime %s\n",$f, dtstr($sb->mtime,'short');
-	#================
-	#  Find starting folder
-	#================
-	#	 /Users/rmr/Dropbox/data/frsr/raw/frsrarchive_20170702T023027Z/data/capturefrsr.txt, mtime 20170701,193006
+# 	$sb=stat($f);
+# 	$ftime=$sb->mtime-$offset_sec;
+# 	printf"File %s, mtimeZ %s\n",$f, dtstr($ftime,'short');
+		#  Find starting folder
+		#/Users/rmr/data/frsr/171024_vtrials/archive/data/data_20171020T232831Z/frsr_interp_1710202328.txt
+		# PROPER FILE NAMES
 	if ( $f =~ /20......T......Z/ ){  # pull folder time
 		$ix=index($f,"201");
 		$fdt=dtstr2dt(substr($f,$ix,16));
-		# printf"index = $ix, %s, %s\n", substr($f,$ix,16), dtstr($fdt);
+		#printf"index = $ix, %s, %s\n", substr($f,$ix,16), dtstr($fdt);
+			# FILE TIME > STARTTIME 
 		if($dtstart > $fdt) {
 			#print"Skip $f\n";
 		}else{
-			#	OPEN AND SCAN THE FILE
+				# OPEN AND SCAN THE FILE
 			print "OPEN: $f\n";
-			open FIN, $f or die;
+			open FIN, $f or die("trying\n");
 			#================
-			# FIND THE FIRST LINE WITH START TIME
+			# FIND THE FIRST LINE MODE
+			#H, 2017,05,27,17,20,15,  35.84968, -106.27295, 0.0, 0.0, 0.0, 1.0, 0.18, 0.18, -0.03, -0.02, 21.6,  10.0
+			#L, 2017,05,26,22,56,46,  35.84973, -106.27273, 0.0, 311.4, 50.5, 23.6, 0.85, 0.83, 0.70, 0.68, 0.0,  10.0
+			#H, 2017,10,20,23,28,30,  -42.88256, 147.33966, 0.0, 0.0, 0.0, 1.0, -0.62, -0.91, -0.82, -0.90, 409.4,  20.0
 			#================
 			while(<FIN>){
 				chomp($str=$_);
 				$nread++;
-				if( $str=~/\$FSR03/ ){
-					$dt=FrsrParse_dt($str);  # if chksum then pull gps time; fail=0
-					if($dt>=$dtstart){last}
-				}
-			}
-			#================
-			# Record all lines to dtend
-			# Low and high modes are mixed
-			#================
-			while(<FIN>) {
-				chomp($str=$_);
-				$nread++;
-				if( $str =~ /\$FSR03/ ){
-					$dt=FrsrParse($str);
-					if($dt > $dtend){last}
-					#================
-					# if inside the time window
-					#================
-					if($dt>$dtstart && $dt <= $dtend){
+				if( $str=~/^H/ || $str=~/^L/ || $str=~/^T/){
+						# RECORD TIME > STARTTIME
+					$recorddt = dtstr2dt(substr($str,3,19));
+					if($recorddt >= $dtstart) {
+							#=====================
+							# PROCESS DA0 DATA -- occurs on each cycle
+							#=====================
 						$nrec++;
-						print Fout "$nrec $strout\n";
-						#================
-						# add sweeps if present
-						#================
-						if($mode==2){
+							# EPHEM
+						@w=split /[ ,]+/g,$str;  # parse original head record
+						($saz,$ze,$ze0) = Ephem($w[7], $w[8], $recorddt);
+						$str=$str.sprintf", %.1f, %.1f",$saz,$ze;
+							# READ GLOBALS
+						$str1=<FIN>; chomp($str1); 
+						$str1 =~ s/^\s+//; $str1 =~ s/\s+$//;
+						@f1=split /[ ,]+/g,$str1;
+						$str1=<FIN>; chomp($str1); 
+						$str1 =~ s/^\s+//; $str1 =~ s/\s+$//;
+						@f2=split /[ ,]+/g,$str1;
+						for(0..6){
+							$str=$str.','.$f1[$_].','.$f2[$_];
+						}
+						$str =~ s/[, ]+/,/g;
+						print Fout "$str\n";
+							# INCREMENT COUNTERS
+						if( $str=~/^H/ || $str=~/^T/){
+							$nhigh++;
+						}
+							# RECORD TIME > END TIME
+						if($recorddt > $dtend){
+							last;
+						}
+							#=====================
+							# PROCESS DA0 DATA -- occurs on each cycle
+							#=====================
+						if($w[17] >= $w[18]){
 							for($ic=1;$ic<=7;$ic++){
-								$str=sprintf"printf R%d \"\$nrec  \$strout%d\\n\";",$ic,$ic;
-								eval $str;
+									# OPEN SWEEP FILE
+								$fout = $timeseriespath."/da".$ic."raw.txt";
+								eval sprintf"\$R=R%d",$ic;
+									# WRITE BASE INFO
+								printf $R "%s, $w[7], $w[8], %.1f, %.1f, $w[17], $f1[$ic-1], $f2[$ic-1]",dtstr($recorddt,'csv'),$saz,$ze;
+									# BINS
+								$str=<FIN>; chomp($str);
+								$str=~s/[ ,]+/, /g;
+								print $R ",   $str";
+								print $R "\n";
+	#$str=sprintf"print R%d \"nrec yyyy MM dd hh mm ss lat lon saz sze shad g1 g2 s01 s02 s03 s04 s05 s06 s07 s08 ".
+		#"s09 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23\\n\";",$ic;
 							}
-						}	
+						}
 					}
 				}
 			}
 		}
 	}
+	if($recorddt > $dtend){
+		last;
+	}
 }
-print"nread=$nread,  bad checksums=$nbadcheck,   good records: $nrec,    high mode: $nhigh\n";
+print"nread: $nread,  good records: $nrec,  high mode: $nhigh\n";
+
+	#=====================
+	# PROCESS SWEEPS
+	#=====================
+	
 exit 0;
 
+#=======================================================================
+sub AddHeader{
+print F '
 
-#=========================================================
-#$GPRMC,190824,A,4737.0000,S,12300.0000,W,002.1,202.0,210210,019.0,W*62
-sub NmeaChecksum
-# $cc = NmeaChecksum($str) where $str is the NMEA string that starts with '$' and ends with '*'.
-{
-    my ($line) = @_;
-    my $csum = 0;
-    $csum ^= unpack("C",(substr($line,$_,1))) for(1..length($line)-2);
-    return (sprintf("%2.2X",$csum));
+da0raw flat file
+mode	: H,T or L
+yyyy	: year
+MM	: month
+dd	: day of month
+hh	: hour (0-23)
+mm	: minute (0-59)
+ss	: second (0-59)
+lat	: latitude. float point, (-90 to 90), N plus
+lon	: longitude, float point, (-180 to 180), E plus
+sog	: speed over ground, kts
+cog	: course over ground, degT
+thead	: Head temperature, degC
+t1	: Inner temperature, degCC
+t2	: Outside the cube temperature, degC
+p1	: pitch at horizon 1, deg, bow up plus
+p2	: pitch at horizon 2, deg, bow up plus
+r1	: roll at horizon 1, deg, port up plus
+r2	: roll at horizon 2, deg, port up plus
+shad	: shadow ratio, no units
+shadlim	: shadow-no shadow limit, no units
+saz	: solar azimuth, degT
+sze	: solar zenith, deg from vertical
+g11	: global for channel 1, horizon 1, millivolts
+g12	: global for channel 1, horizon 2, millivolts
+g21	: global for channel 2, horizon 1, millivolts
+g22	: global for channel 2, horizon 2, millivolts
+g31	: global for channel 3, horizon 1, millivolts
+g32	: global for channel 3, horizon 2, millivolts
+g41	: global for channel 4, horizon 1, millivolts
+g42	: global for channel 4, horizon 2, millivolts
+g51	: global for channel 5, horizon 1, millivolts
+g52	: global for channel 5, horizon 2, millivolts
+g61	: global for channel 6, horizon 1, millivolts
+g62	: global for channel 6, horizon 2, millivolts
+g71	: global for channel 7, horizon 1, millivolts
+g72	: global for channel 7, horizon 2, millivolts
+
+
+dairaw flat file where i=1-7
+yyyy	: year
+MM	: month
+dd	: day of month
+hh	: hour (0-23)
+mm	: minute (0-59)
+ss	: second (0-59)
+lat	: latitude. float point, (-90 to 90), N plus
+lon	: longitude, float point, (-180 to 180), E plus
+saz	: solar azimuth, degT
+sze	: solar zenith, deg from vertical
+shad	: shadow ratio, no units
+g11	: global for channel, horizon 1, millivolts
+g12	: global for channel, horizon 2, millivolts
+s01	: sweep bin 01, avg 30 points, millivolts
+s02	: sweep bin 02, avg 20 points, millivolts
+s03	: sweep bin 03, avg 20 points, millivolts
+s04	: sweep bin 04, avg 10 points, millivolts
+s05	: sweep bin 05, avg 10 points, millivolts
+s06	: sweep bin 06, avg 10 points, millivolts
+s07	: sweep bin 07, avg 5 points, millivolts
+s08	: sweep bin 08, avg 5 points, millivolts
+s09	: sweep bin 09, avg 5 points, millivolts
+s10	: sweep bin 10, avg 5 points, millivolts
+s11	: sweep bin 11, avg 5 points, millivolts
+s12	: sweep bin 12, avg 1 points, millivolts (minimum)
+s13	: sweep bin 13, avg 5 points, millivolts
+s14	: sweep bin 14, avg 5 points, millivolts
+s15	: sweep bin 15, avg 5 points, millivolts
+s16	: sweep bin 16, avg 5 points, millivolts
+s17	: sweep bin 17, avg 5 points, millivolts
+s18	: sweep bin 18, avg 10 points, millivolts
+s19	: sweep bin 19, avg 10 points, millivolts
+s20	: sweep bin 20, avg 10 points, millivolts
+s21	: sweep bin 21, avg 20 points, millivolts
+s22	: sweep bin 22, avg 20 points, millivolts
+s23	: sweep bin 23, avg 30 points, millivolts
+';
 }
-#==========================================================================
-sub DecodePsuedoAscii2
-# input = 2 p.a. chars   output = decimal number
-{
-	my ($strin,$c1,$c2,$b1,$b2,$x);
-	$strin=shift();
-	#printf"In string = $strin  ";
-	$c1 = substr($strin,0,1);
-	$c2 = substr($strin,1,1);
-	$b1 = ord( $c1 ) - 48;
-	$b2 = ord($c2) - 48;
-	$x = $b2*64+$b1;
-	#print"  decode = $x\n";
-	return $x;
-}
-
-#===========================================================================
-sub FrsrParse_dt {
-	my ($strin);
-	my ($pktlen,$cc,$packetid,$shadow,$shadowthreshold,$ix);
-	my (@g1,@g2,@sw);
-
-	$strin=shift();
-	## CHKSUM TEST
-	$cc = NmeaChecksum( substr($strin,0,-2) );
-	#printf"chksum=%s\n",substr($strin,-2);
-	#printf"computed chksum=%s\n", $cc;
-	if ($cc ne substr($strin,-2)) {
-		#print"Checksum fails, skip\n";
-		return 0;
-	} else {
-		$ix1=index($strin,'<<');
-		$ix2=index($strin,'>>');
-		#print"ix1=$ix1, ix2=$ix2\n";
-		$strgps=substr $strin,$ix1+2,$ix2-$ix1-3;
-		#print"strgps=$strgps\n";
-		@w=split /[,]+/g,$strgps;
-		#print"@w\n";
-		# $GPRMC,000002,A,4736.2069,N,12217.2884,W,000.0,000.0,090517
-		#  0      1     2  3        4  5         6  7    8      9
-		#  HDR   hhmmss A lldd.dddd H llldd.dddd H sog   cog   ddMMyy
-		# $GPRMC 000002 A 4736.2069 N 12217.2884 W 000.0 000.0 090517
-		# TIME
-		$dt=datesec(substr(@w[9],4,2)+2000,substr($w[9],2,2),substr($w[9],0,2),
-		substr($w[1],0,2),substr($w[1],2,2),substr($w[1],4));
-		#printf"time=%s\n",dtstr($dt);
-		return $dt;
-	}
-}
-#==============================================================================
-#===========================================================================
-# Subroutine to fully parse the FRSR string.
-# Uses a global variable $strout.
-# Returns the packet GPStime.
-sub FrsrParse {
-	my ($strin,$pktlen,$cc,$packetid,$shadow,$shadowthreshold,$ix);
-	my ($ichar,$p,$i,$MfrTemp,$ix1,$ix2,$strgps,$dt,$lat,$lon,$sogmps,$cog,$T1,$T2);
-	my ($pitch1,$pitch2,$roll1,$roll2,$ia,$ib,$ic,$is);
-	my (@w,@g1,@g2,@s,$imin,$shadow,$swshadow,$x);
-
-	$strin=shift();
-	#print"strin = $strin\n";
-
-	$pktlen=length($strin);
-	#print"packet length = $pktlen\n";
-	## CHKSUM TEST
-	$cc = NmeaChecksum( substr($strin,0,-2) );
-	#printf"chksum=%s\n",substr($strin,-2);
-	#printf"computed chksum=%s\n", $cc;
-	# FAIL CHECKSUM
-	if ($cc ne substr($strin,-2)) {
-		#print"Checksum fails, skip\n";
-		$nbadcheck++;
-		$dt=0;
-	# PASS CHECKSUM
-	} else {
-		$ichar=1;
-		# Header
-		$packetid = substr($strin,$ichar,5);
-		#print"ID = $packetid\n";
-		$ichar+=6;
-		# Mode
-		$mode=substr($strin,$ichar,1);
-		if($mode=~/H/){$mode=1}
-		else{$mode=0}
-		#print"Mode = $mode\n";
-		$ichar+=2;
-		# MFR temp
-		$MfrTemp = substr($strin,$ichar,4);
-		#print"MfrTemp = $MfrTemp\n";
-		$ichar+=7;
-		# GPS
-		$ix1=index($strin,'<<');
-		$ix2=index($strin,'>>');
-		#print"ix1=$ix1, ix2=$ix2\n";
-		$strgps=substr $strin,$ix1+2,$ix2-$ix1-3;
-		#print"strgps=$strgps\n";
-		@w=split /[,]+/g,$strgps;
-		#print"@w\n";
-		# $GPRMC,000002,A,4736.2069,N,12217.2884,W,000.0,000.0,090517
-		#  0      1     2  3        4  5         6  7    8      9
-		#  HDR   hhmmss A lldd.dddd H llldd.dddd H sog   cog   ddMMyy
-		# $GPRMC 000002 A 4736.2069 N 12217.2884 W 000.0 000.0 090517
-		# TIME
-		$dt=datesec(substr(@w[9],4,2)+2000,substr($w[9],2,2),substr($w[9],0,2),
-		substr($w[1],0,2),substr($w[1],2,2),substr($w[1],4));
-		#printf"time=%s\n",dtstr($dt);
-		# LAT
-		$lat=substr($w[3],0,2)+substr($w[3],2)/60;
-		if( @w[4] =~ /s/i) {$lat=-$lat}
-		# LON
-		$ix1=index($w[5],'.');
-		#print"ix1=$ix1\n";
-		$lon=substr($w[5],0,$ix1-2)+substr($w[5],$ix1-2)/60;
-		if( @w[6] =~ /w/i) {$lon=-$lon}	
-		#print"lat=$lat   lon=$lon\n";
-		# SOG m/s
-		$sogmps = @w[7]*.51444;
-		# COG degT
-		$cog = @w[8];
-		$ichar = $ix2+3;	
-		# T1,T2
-		$T1 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/10-20;
-		$ichar+=2;
-		$T2 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/10-20;
-		$ichar+=3;
-		#printf"T1 = %.1f   T2 = %.1f\n",$T1,$T2;
-		# pitch1, pitch2
-		$pitch1 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/100-20;
-		$ichar+=2;
-		$pitch2 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/100-20;
-		$ichar+=3;
-		#printf"pitch1 = %.2f   pitch2 = %.2f\n",$pitch1,$pitch2;
-		# roll1, roll2
-		$roll1 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/100-20;
-		$ichar+=2;
-		$roll2 = DecodePsuedoAscii2( substr($strin,$ichar,2) )/100-20;
-		$ichar+=3;
-		#printf"roll1 = %.2f   roll2 = %.2f\n",$roll1,$roll2;
-		# global 1
-		$ix=$ichar;
-		for($i=0; $i<7; $i++){
-			push(@g1,DecodePsuedoAscii2( substr($strin,$ix,2) ) );
-			$ix+=2;
-		}
-		for($i=0; $i<7; $i++){
-			#print"$g1[$i]  ";
-		}
-		#print"\n";
-		# global 2
-		$ichar+=15;
-		$ix=$ichar;
-		for($i=0; $i<7; $i++){
-			push(@g2,DecodePsuedoAscii2( substr($strin,$ix,2) ) );
-			$ix+=2;
-		}
-		for($i=0; $i<7; $i++){
-			#print"$g2[$i]  ";
-		}
-		#print"\n";
-		# shadow, limit
-		$ichar+=15;
-		$shadow = DecodePsuedoAscii2( substr($strin,$ichar,2) )/10;
-		$ichar+=2;
-		$shadowthreshold = DecodePsuedoAscii2( substr($strin,$ichar,2) )/10;
-		$ichar+=3;
-		#printf"shadow = %.1f   shadowthreshold = %.1f\n",$shadow,$shadowthreshold;
-		# EPHEMERIS
-		($saz,$sze,$ze0) = Ephem($lat, $lon, $dt);
-		($In,$Id) = solflux($ze,@solfluxparams);
-		#printf"solar az=%.1f, zenith=%.1f, Corrected zenith=%.1f\n",$saz,$sze,$ze0;
-		#printf"Theoretical sw direct=%.1f, diffuse=%.1f\n",$In, $Id;
-		
-		# WRITE D0 FILE
-		#mode yyyy MM dd hh mm ss lat lon saz sze sw swstd lw lwstd piru tcase tdome pitch pstd roll rstd az sog cog hdg sol_n sol_d
-		$strout=sprintf"%s  %s %.5f %.5f %.1f %.1f %.1f %.1f %.2f %.2f %.2f %.1f %.1f %.1f %.1f ",
-			$mode, dtstr($dt,'ssv'),$lat,$lon,$sogmps,$cog,$saz,$sze,$MfrTemp,$T1,$T2,$pitch1,$pitch2,$roll1,$roll2;			
-		for($i=0; $i<7; $i++){
-			$strout=$strout.sprintf"$g1[$i] $g2[$i] ";
-		}
-		$strout=$strout.sprintf"  %.1f %.1f  %.1f %.1f",$shadowthreshold, $shadow,$In,$Id;
-		# HIGH MODE
-		if($pktlen>300){
-			$mode=2;
-			$nhigh++;
-			# FILL THE SW ARRAY
-			$ix=$ichar; # first character
-			for($ia=0; $ia<7; $ia++){
-				for($ib=0; $ib<23; $ib++){
-					$ic = $ia*23 + $ib; # array index
-					$sw[$ic] = DecodePsuedoAscii2( substr($strin,$ix,2) );
-					#print"$ia $ib $sw[$ic]\n";
-					$ix+=2;
-				}
-				$ix++; # skip the comma
-			}
-			# PRINT OUT SWEEPS
-			# CHANNELS ia = 0...6
-			for($ia=0; $ia<7; $ia++){
-				$str=sprintf("\$strout%d=sprintf\"%%s %%.6f %%.6f %%.1f %%.1f %%.1f %%.1f %%.1f \",dtstr(\$dt,\'ssv\'),\$lat,\$lon,\$saz,\$sze,\$shadow,\$g1[%d],\$g2[%d];",
-					$ia+1,$ia,$ia);
-				eval $str;
-				@s=();
-				# BINS ib = 0...22, FILL s ARRAY
-				for($ib=0; $ib<23; $ib++){
-					$ic = $ia*23 + $ib; # array index
-					#print"$ia $ib $ic $sw[$ic]\n";
-					push(@s,$sw[$ic]);
-					$str=sprintf("\$strout%d=\$strout%d.sprintf(\"%%.1f \",\$sw[\$ic]);",$ia+1,$ia+1);
-					eval($str);
-				}
-			}
-# 			print"(0) $strout\n\n";
-# 			print"(1) $strout1\n\n";
-# 			print"(2) $strout2\n\n";
-# 			print"(3) $strout3\n\n";
-# 			print"(4) $strout4\n\n";
-# 			print"(5) $strout5\n\n";
-# 			print"(6) $strout6\n\n";
-# 			print"(7) $strout7\n";
-# 			die;
-		}
-	}
-	return $dt;
-}
-

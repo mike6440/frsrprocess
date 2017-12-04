@@ -40,10 +40,10 @@ print "DATAPATH = $datapath   ";
 if ( ! -d $datapath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
 else {print "EXISTS.\n"}
 		# RAWPATH 
-$rawpath = FindInfo($setupfile,'RAWPATH',':');
-print "RAWPATH = $rawpath   ";
-if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
-else {print "EXISTS.\n"}
+# $rawpath = FindInfo($setupfile,'RAWPATH',':');
+# print "RAWPATH = $rawpath   ";
+# if ( ! -d $rawpath ) { print"DOES NOT EXIST. STOP.\n"; exit 1}
+# else {print "EXISTS.\n"}
 		# TIMESERIESPATH
 $timeseriespath=FindInfo($setupfile,"TIMESERIESPATH",":");
 if ( ! -d $timeseriespath ) { 
@@ -62,17 +62,17 @@ $theadmin=FindInfo($setupfile,"THEADMIN");
 printf"THEADMIN = %.1f\n", $theadmin;
 $theadmax=FindInfo($setupfile,"THEADMAX");
 printf"THEADMAX = %.1f\n", $theadmax;
-
-$stationpressure=FindInfo($setupfile,"STATION PRESSURE");
-printf"STATION PRESSURE = %.1f\n", $stationpressure;
-
-	# SOLFLUX
-$str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
-print"SOLFLUX PARAMETERS:";
-@solfluxparams=split(/[, ]+/,$str);
-$solfluxparams[1]=$stationpressure;
-foreach(@solfluxparams){print"   $_"}
-print"\n";
+# 
+# $stationpressure=FindInfo($setupfile,"STATION PRESSURE");
+# printf"STATION PRESSURE = %.1f\n", $stationpressure;
+# die;
+# 	# SOLFLUX
+# $str = FindInfo($setupfile,"SOLFLUX PARAMETERS");
+# print"SOLFLUX PARAMETERS:";
+# @solfluxparams=split(/[, ]+/,$str);
+# $solfluxparams[1]=$stationpressure;
+# foreach(@solfluxparams){print"   $_"}
+# print"\n";
 	# FIXED GPS 
 $FixedLocation = FindInfo($setupfile,"GPS FIXED FLAG");
 if($FixedLocation == 1){
@@ -88,7 +88,7 @@ if($FixedTilt == 1){
 	$hdgfix=FindInfo($setupfile,"TILT FIXED HEADING",':');
 	printf"USING FIXED TILT  pitch=%.1f   roll=%.1f\n",$pitchfix,$rollfix;
 }
-	# missing
+die;	# missing
 $missing=-999;
 	# OUTPUT da0
 # nrec shrat yyyy MM dd hh mm ss lat lon saz sze pitch roll sog cog sol_n sol_d g1 g2 g3 g4 g5 g6 g7

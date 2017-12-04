@@ -14,34 +14,22 @@ SETUPFILE='0_initialize_frsr_process.txt';
 fprintf('SETUPFILE = %s\n', SETUPFILE);
 
 DATAPATH = FindInfo(SETUPFILE,'DATAPATH',':');
-DATAPATH = fullfile(HOME,DATAPATH);
 disp(['DATAPATH = ',DATAPATH]);
 
 SERIES = FindInfo(SETUPFILE,'SERIES NAME',':');
 disp(['SERIES NAME = ',SERIES]);
 
-SERIESPATH = fullfile(DATAPATH,SERIES);
-disp(['SERIESPATH = ',SERIESPATH]);
+%SERIESPATH = fullfile(DATAPATH,SERIES);
+%disp(['SERIESPATH = ',SERIESPATH]);
 
-TIMESERIESPATH = fullfile(SERIESPATH,'timeseries');
+TIMESERIESPATH = fullfile(DATAPATH,'timeseries');
 disp(['TIMESERIESPATH = ',TIMESERIESPATH]);
 
-IMAGEPATH = fullfile(SERIESPATH,'images');
+IMAGEPATH = fullfile(DATAPATH,'images');
 disp(['IMAGEPATH = ',IMAGEPATH]);
 
 MISSING=-999;
 disp(['MISSING ',sprintf('%d',MISSING)]);
-
-STARTTIME = FindInfo(SETUPFILE,'STARTTIME',':');
-fprintf('STARTTIME=%s\n', STARTTIME);
-str=['dtstart=datenum(',STARTTIME,');'];
-eval(str);
-
-ENDTIME = FindInfo(SETUPFILE,'ENDTIME',':');
-fprintf('ENDTIME=%s\n', ENDTIME);
-str=['dtend=datenum(',ENDTIME,');'];
-eval(str);
-
 %===============
 % LANGLEY TIMES
 %===============
@@ -49,8 +37,7 @@ str=FindInfo(SETUPFILE,'NUMBER LANGLEY');
 if strcmpi(str,'MISSING'), disp('NUMBER LANGLEY is missing, set to 0'), Nland=0; end 
 disp(['NUMBER LANGLEY = ',str]);
 Nlang=str2num(str);
-if Nlang==0, disp('No Langley plots in this series.');
-else
+if Nlang>0,
 	% Read each time and make array dtlang n x 
 	DTlang=[];
 	for i=1:Nlang,
@@ -80,7 +67,7 @@ if exist(arrayname,'var')
 	%fprintf('Array %s is already loaded.\n',arrayname);
 else
 	filename=sprintf('%s/da0raw.txt',TIMESERIESPATH);
-	%fprintf('INPUT: %s\n',filename);
+	fprintf('INPUT: %s\n',filename);
 	matname=strcat(filename(1:end-3),'mat');
 	%fprintf('MAT: %s\n',matname);
 	if exist(matname,'file')
@@ -92,6 +79,7 @@ else
 		disp(cmd); eval(cmd);
 	end
 end
+return
 %====== DAX ==============================================================
 for i=1:7, 
 	cmd=sprintf('arrayname=''d%dr'';',i);
